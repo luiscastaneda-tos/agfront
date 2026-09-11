@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build"
+    "verify:contracts": "node scripts/verify-contracts.mjs",
+    "build": "npm run verify:contracts && tsc && vite build"
   },
   "dependencies": {
     "react": "^18.3.1",
