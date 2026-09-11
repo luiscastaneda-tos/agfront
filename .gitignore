@@ -11,4 +11,5 @@ coverage/
 .DS_Store
 
 .npm-task-cache/
+.npm-cache/
 .claude/settings.local.json
