@@ -2,20 +2,21 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 4,
+  "iteration": 5,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
     "FE-001",
     "FE-002",
-    "FE-003"
+    "FE-003",
+    "FE-004"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-003",
+    "task_id": "FE-004",
     "verdict": "approve",
-    "summary": "The complete diff satisfies FE-003: it adds an App entry point, a reusable two-column semantic layout, and visible placeholders for activity, tasks, agents, and approvals, all within allowed paths. Styling is neutral and structural, with no data wiring, state, authentication, transport, dependency, or contract changes. The verification output was empty, but inspection found no apparent TypeScript or build-invalid code.",
-    "reviewed_at": "2026-09-11T18:02:26Z",
+    "summary": "FE-004 meets its acceptance criteria and architecture constraints. The diff is complete and confined to allowed paths; authentication uses Supabase email/password with persistence, refresh, and URL detection disabled; the token remains module-scoped in memory; privileged keys are rejected without forbidden literals; the login UI exposes only authentication status and generic failures. Contract verification and the production build passed.",
+    "reviewed_at": "2026-09-11T21:16:57Z",
     "provider": "codex"
   },
   "notes": [
@@ -26,7 +27,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 4,
+    "slot": 5,
     "last_provider": "codex",
     "claude_review_every": 0
   }

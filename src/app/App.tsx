@@ -1,9 +1,17 @@
+import { useState } from "react";
+import { LoginForm } from "../auth/LoginForm";
 import { ApplicationLayout } from "../components/layout/ApplicationLayout";
 import "./app.css";
 
 const operationalRegions = ["Activity", "Tasks", "Agents", "Approvals"];
 
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return <LoginForm onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <ApplicationLayout
       chat={

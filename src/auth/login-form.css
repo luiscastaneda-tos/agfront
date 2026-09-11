@@ -1,0 +1,33 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.login-form {
+  width: min(100%, 22rem);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid #d0d0d0;
+  background: #ffffff;
+}
+
+.login-form h1,
+.login-form p {
+  margin-bottom: 0;
+}
+
+.login-form input,
+.login-form button {
+  box-sizing: border-box;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.625rem;
+  font: inherit;
+}
+
+.login-error {
+  color: #8b1a1a;
+}
