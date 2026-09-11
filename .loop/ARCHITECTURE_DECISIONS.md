@@ -74,6 +74,38 @@ reasoning, no raw tool arguments. Guard F4 enforces this on event-shaped types.
 
 A reload starts clean. Matches the backend, which is entirely in-memory.
 
+## D-011 - Supabase sign-in mechanism (V1)
+
+Frozen by the human while resolving the FE-004 HUMAN_GATE, after D-001..D-010.
+
+Sign-in uses Supabase email + password via `signInWithPassword`. The following
+are forbidden in V1: OAuth, magic-link redirects, URL fragments, and any token
+in a query string. V1 is a simple demo login with no redirects, which is what
+keeps it compatible with the invariant that no token ever appears in a URL.
+
+The Supabase client is configured explicitly with:
+
+```text
+persistSession     = false
+autoRefreshToken   = false
+detectSessionInUrl = false
+```
+
+The access token returned by `signInWithPassword` is held only in memory,
+through the application's auth/session boundary. Persisting it is forbidden in
+`localStorage`, `sessionStorage`, IndexedDB, cookies, and any URL, query string
+or hash. It must never be rendered and never appear in a log.
+
+On reload V1 loses the session and requires logging in again. That is accepted
+for the demo.
+
+Configuration reaches the frontend exclusively through `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY`, documented in `.env.example` with no real values.
+URLs and keys are never hardcoded. `VITE_SUPABASE_ANON_KEY` is the public client
+key; a `service_role` key must never be used or accepted by the frontend.
+
+The demo uses test users created in the existing Supabase project.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
