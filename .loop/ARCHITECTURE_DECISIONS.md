@@ -106,6 +106,24 @@ key; a `service_role` key must never be used or accepted by the frontend.
 
 The demo uses test users created in the existing Supabase project.
 
+#### Clarification - placeholder form in `.env.example`
+
+Recorded while resolving the F1 guard violation on the first FE-004 attempt.
+This clarifies D-011; it changes no architecture.
+
+Example values in `.env.example` must use placeholders that do NOT begin with an
+alphanumeric character:
+
+```text
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-anon-key>
+```
+
+Forms such as `fictional-public-anon-key`, `example-key`, `test-key` or `abc123`
+are forbidden, because the F1 secret-leakage guard correctly treats a
+credential-shaped assignment with an alphanumeric value as a possible secret.
+The guard is not relaxed to accommodate placeholders.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
