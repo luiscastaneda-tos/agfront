@@ -1,0 +1,123 @@
+project: noktos-agent-frontend
+version: 1
+policy:
+  tests_in_loop: false
+  reviewer_required: true
+  deterministic_build_check: true
+  contracts_hash_check: true
+  max_attempts_per_task: 2
+  final_status: READY_FOR_HUMAN_REVIEW
+
+items:
+  - id: FE-000
+    title: Bootstrap frontend application
+    objective: Minimal compiling React and TypeScript application with npm, preserving the loop harness and the vendored contracts directory.
+    risk: low
+    scope_hint: [package.json, tsconfig.json, index.html, src/main.tsx]
+    forbidden_hint: [src/contracts/, contracts.lock]
+    depends_on: []
+
+  - id: FE-001
+    title: Contract vendoring verification wiring
+    objective: Wire the contract verification into the application build so drift fails loudly at build time as well as in the harness check. Contracts remain read-only in this repository.
+    risk: critical
+    scope_hint: [scripts/, package.json]
+    forbidden_hint: [src/contracts/, contracts.lock]
+    depends_on: [FE-000]
+
+  - id: FE-002
+    title: Event fixtures and mock transport
+    objective: Recorded event fixtures plus a mock transport implementing the same interface as the live client, so the interface can be built without a backend.
+    risk: medium
+    scope_hint: [fixtures/, src/transport/]
+    depends_on: [FE-001]
+
+  - id: FE-003
+    title: Application shell and layout
+    objective: Chat column plus operational side panel scaffolding with no data wiring.
+    risk: low
+    scope_hint: [src/app/, src/components/layout/]
+    depends_on: [FE-000]
+
+  - id: FE-004
+    title: Supabase authentication
+    objective: Login flow producing an access token held in memory only, never written to browser storage, never placed in a URL, never rendered or logged.
+    risk: critical
+    scope_hint: [src/auth/]
+    depends_on: [FE-003]
+
+  - id: FE-005
+    title: Resumable event stream client
+    objective: Streaming client over fetch and ReadableStream sending the Authorization header, with manual reconnection, Last-Event-ID tracking and seq gap detection.
+    risk: critical
+    scope_hint: [src/transport/]
+    depends_on: [FE-004, FE-002]
+
+  - id: FE-006
+    title: Event store and correlation
+    objective: Client-side store indexing events by conversation, task and agent, tolerating duplicate and out-of-order delivery and ordering by seq.
+    risk: high
+    scope_hint: [src/state/]
+    depends_on: [FE-005]
+
+  - id: FE-007
+    title: Chat interface
+    objective: Message composition and history with optimistic send reflecting 202-accepted semantics, with assistant responses arriving asynchronously.
+    risk: medium
+    scope_hint: [src/features/chat/]
+    depends_on: [FE-006]
+
+  - id: FE-008
+    title: Activity timeline
+    objective: Chronological operational event feed grouped by task, rendering only structured event data.
+    risk: medium
+    scope_hint: [src/features/timeline/]
+    depends_on: [FE-006]
+
+  - id: FE-009
+    title: Task queue visualization
+    objective: Live task list with status, parent and child relationships and visible transitions.
+    risk: medium
+    scope_hint: [src/features/tasks/]
+    depends_on: [FE-006]
+
+  - id: FE-010
+    title: Active agents panel
+    objective: Registry-driven agent display with idle and busy state derived from events.
+    risk: low
+    scope_hint: [src/features/agents/]
+    depends_on: [FE-006]
+
+  - id: FE-011
+    title: Approval cards and decisions
+    objective: Render pending approvals from inputPreview only, with approve and reject actions carrying an idempotency key, disabled controls while resolving, and correct handling of expired and superseded approvals. Frontend controls are user experience, never the authorization boundary.
+    risk: critical
+    scope_hint: [src/features/approvals/]
+    depends_on: [FE-006]
+
+  - id: FE-012
+    title: Concurrent conversation experience
+    objective: Chat remains usable while tasks are queued, running or awaiting approval, with clear indication that work continues in the background.
+    risk: high
+    scope_hint: [src/features/chat/, src/state/]
+    depends_on: [FE-007, FE-009]
+
+  - id: FE-013
+    title: Live backend integration
+    objective: Switch the transport from mock to the live backend behind the same interface, with a configurable base URL.
+    risk: high
+    scope_hint: [src/transport/, src/config/]
+    depends_on: [FE-012, FE-011]
+
+  - id: FE-014
+    title: Connection and error states
+    objective: Explicit handling for disconnection, reconnection, sequence gaps, authentication expiry prompting re-authentication, empty states and failures.
+    risk: high
+    scope_hint: [src/features/, src/transport/]
+    depends_on: [FE-013]
+
+  - id: FE-015
+    title: Demo polish and human review handoff
+    objective: Visual polish plus a human-review checklist documenting the in-memory limitations and the fictional demo data. Every status claim must match the code as implemented.
+    risk: low
+    depends_on: [FE-014]

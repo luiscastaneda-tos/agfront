@@ -1,0 +1,22 @@
+{
+  "project": "noktos-agent-frontend",
+  "version": 1,
+  "status": "RUNNING",
+  "iteration": 0,
+  "current_task": null,
+  "completed_tasks": [],
+  "blocked_tasks": [],
+  "last_review": null,
+  "notes": [
+    "No tests are executed by this loop; the contract hash check and the build are the deterministic gates.",
+    "src/contracts/ is vendored read-only from noktos-agent-backend at version 1.0.0 and verified against contracts.lock.",
+    "The access token lives in memory only: never in browser storage, never in a URL, never rendered or logged.",
+    "Frontend controls are user experience; the backend is the authorization boundary.",
+    "Development runs against fixtures until FE-013 swaps in the live transport."
+  ],
+  "reviewer_rotation": {
+    "slot": 0,
+    "last_provider": null,
+    "claude_review_every": 0
+  }
+}
