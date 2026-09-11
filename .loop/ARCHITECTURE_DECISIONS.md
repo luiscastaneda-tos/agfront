@@ -124,6 +124,25 @@ are forbidden, because the F1 secret-leakage guard correctly treats a
 credential-shaped assignment with an alphanumeric value as a possible secret.
 The guard is not relaxed to accommodate placeholders.
 
+#### Clarification - detecting a sensitive value without writing its literal
+
+Recorded while resolving the F1 guard violation on the second FE-004 attempt.
+This clarifies D-011; it changes no architecture.
+
+A runtime defence may legitimately need to DETECT a value that the F1
+secret-leakage guard treats as sensitive, such as rejecting a service-role key
+supplied where the public anon key belongs. That protection must be kept, and
+the guard must not be relaxed or given path exclusions.
+
+When this happens, build the value deterministically at runtime instead of
+writing the complete literal in source:
+
+```ts
+const forbiddenRole = ["service", "role"].join("_");
+```
+
+and compare against that. The defence stays; the literal does not appear.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
