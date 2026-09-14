@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 19,
+  "iteration": 20,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -23,14 +23,15 @@
     "FE-009B",
     "FE-009C",
     "FE-009D",
-    "FE-010A"
+    "FE-010A",
+    "FE-010B"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-010A",
+    "task_id": "FE-010B",
     "verdict": "approve",
-    "summary": "FE-010A meets the task requirements and architecture constraints. The sole added file follows the existing controller lifecycle, safely copies descriptors, coalesces requests, preserves prior data on failure, and suppresses updates after disposal. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T16:03:36Z",
+    "summary": "FE-010B meets acceptance criteria and architecture requirements. The sole added file preserves registry order, separates snapshot and conversation-scoped observed status, copies arrays and gap objects, and exposes gaps for empty registries. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T16:05:45Z",
     "provider": "codex"
   },
   "notes": [
@@ -41,7 +42,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 19,
+    "slot": 20,
     "last_provider": "codex",
     "claude_review_every": 0
   }
