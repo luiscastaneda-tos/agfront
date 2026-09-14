@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 34,
+  "iteration": 35,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -38,14 +38,15 @@
     "FE-014A",
     "FE-014B",
     "FE-014C",
-    "FE-014D"
+    "FE-014D",
+    "FE-015A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-014D",
+    "task_id": "FE-015A",
     "verdict": "approve",
-    "summary": "FE-014D meets acceptance criteria and architecture rules. Authentication failures receive distinct status and fixed reload/sign-in guidance across chat and operational panels. Submission gating, generic failures, cleanup, and unmount protection remain intact. Changes are limited to allowed files; harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:30:04Z",
+    "summary": "FE-015A meets acceptance criteria. The diff adds only docs/HUMAN_REVIEW.md, accurately documents current behavior and limitations, leaves manual checks unchecked, and preserves unresolved human decisions without claiming readiness. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:33:27Z",
     "provider": "codex"
   },
   "notes": [
@@ -56,7 +57,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 34,
+    "slot": 35,
     "last_provider": "codex",
     "claude_review_every": 0
   }

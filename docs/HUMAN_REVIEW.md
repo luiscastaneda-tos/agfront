@@ -1,0 +1,162 @@
+# Demo human review
+
+This guide covers the current source for FE-015A. It records expected behavior,
+not completed verification. All manual checks below are unperformed. Backend-dependent
+checks remain unverified until performed with a running backend and controlled
+fictional scenarios. No backend endpoint availability is asserted here.
+`READY_FOR_HUMAN_REVIEW` is the maximum final status permitted by this loop,
+not a result established by this document. This is a fictional-data-only demo.
+
+## Start locally
+
+Use the variable names and placeholder forms from [.env.example](../.env.example)
+in a local Vite environment file, replacing them locally with approved demo
+configuration. Use only a public Supabase anon key and a designated demo account;
+never add credentials or real traveler data to review evidence.
+
+```dotenv
+VITE_SUPABASE_URL=<your-supabase-url>
+VITE_SUPABASE_ANON_KEY=<your-anon-key>
+VITE_BACKEND_URL=<your-backend-url>
+```
+
+From the repository root with dependencies installed:
+
+```sh
+./node_modules/.bin/vite --host 127.0.0.1
+```
+
+Open the local address printed by Vite. To preview an existing harness-built
+`dist/` instead, use `./node_modules/.bin/vite preview --host 127.0.0.1`.
+The installed Vite CLI supports both commands. [package.json](../package.json)
+has no `dev` or `start` script. Build and contract verification remain harness
+responsibilities; this documentation task runs neither checks nor test suites.
+
+## Entry points and boundaries
+
+[src/main.tsx](../src/main.tsx) mounts
+[App](../src/app/App.tsx), whose authenticated workspace calls
+[`useChatSession(createLiveChatSession)`](../src/presentation/hooks/useChatSession.ts).
+The [live factory](../src/app/bootstrap/createLiveChatSession.ts) constructs
+[HttpTransport](../src/infrastructure/api/HttpTransport.ts).
+The separate [mock factory](../src/app/bootstrap/createMockChatSession.ts)
+constructs [MockTransport](../src/transport/MockTransport.ts), which uses recorded
+fixtures. There is no implemented mock-mode selector or silent live-to-mock
+fallback. Starting Vite alone does not provide a working authenticated workspace.
+
+HttpTransport targets `POST /conversations`,
+`POST /conversations/:id/messages`, `GET /conversations/:id/tasks`,
+`GET /conversations/:id/approvals`, `GET /agents`,
+`GET /conversations/:id/events`, and `POST /approvals/:id/decision`.
+These are client targets, not evidence that backend controllers are available.
+Missing routes fail explicitly.
+
+[Authentication](../src/auth/auth.ts) uses email/password sign-in and a
+module-scoped, memory-only access token. Supabase session persistence, automatic
+refresh, and URL session detection are disabled. The application keeps no durable
+client state: reload requires sign-in and creates a clean conversation session;
+it does not restore the prior draft, submissions, or observations.
+Tokens must never enter browser storage, URLs, logs, rendered output, or review
+artifacts. HTTP and [SSE](../src/infrastructure/sse/SseClient.ts) use the
+Authorization header; SSE uses fetch and ReadableStream, with no EventSource or
+WebSockets. Backend authorization enforcement is required: frontend controls
+cannot grant permission to decide an approval.
+
+## Locally inspectable review
+
+- [ ] Start Vite and open the page: expect the email/password form in
+  [LoginForm](../src/auth/LoginForm.tsx), before workspace initialization.
+- [ ] Trace App and both factories above: expect only the live factory to be
+  wired into App, with no mock selector or fallback branch.
+- [ ] Inspect auth and transport code above: expect memory-only token handling,
+  disabled persistence/refresh/URL detection, and header-based authentication.
+  Do not copy or print token values while reviewing.
+- [ ] Inspect [ApprovalCards](../src/presentation/components/organisms/ApprovalCards.tsx)
+  and its [projection](../src/presentation/view-models/approvalCards.ts): expect
+  preview labels, values, order, and warning emphasis to be preserved from
+  `inputPreview`; no reconstruction from raw arguments. Inspect the
+  [timeline projection](../src/presentation/view-models/activityTimeline.ts):
+  expect operational labels and envelope metadata, without payload rendering,
+  private reasoning, chain-of-thought, or scratchpad output.
+- [ ] Inspect decision handling in ApprovalCards and HttpTransport: expect
+  display-only cards and a transport method forwarding `decision` and
+  `idempotencyKey`. There is no UI decision caller, client decision-key generator,
+  or in-flight decision control to exercise. Record interactive approval review
+  as blocked by missing implementation, not passed.
+
+## Checks requiring services and controlled fictional scenarios
+
+Successful login requires the configured Supabase service. Workspace checks also
+require compatible backend responses and a way to arrange the scenarios below
+outside this frontend; no scenario controls are implemented in App.
+
+- [ ] Sign in with a designated demo account: expect disabled login controls
+  while pending, then workspace initialization. Try an invalid login: expect
+  the fixed sign-in failure message. Reload after successful use: expect sign-in
+  again and no restored client session.
+- [ ] Delay one message response and submit another nonblank message while
+  background work runs: expect independent pending entries, a cleared draft
+  after each send, and continued activity updates. Acceptance means the request
+  was accepted, not that work finished. Blank drafts cannot be sent.
+  See [chat submissions](../src/application/state/chatSubmissions.ts) and
+  [ChatWorkspace](../src/presentation/components/organisms/ChatWorkspace.tsx).
+- [ ] Supply a task snapshot containing parent and child tasks, then explicit
+  task events: expect parent IDs in the flat
+  [task queue](../src/presentation/components/organisms/TaskQueue.tsx), separate
+  snapshot/observed statuses, and source sequences. Background counts cover
+  loaded queue rows only; zero observations do not prove completion.
+- [ ] Supply registry agents and explicit `agent.started`, `agent.completed`,
+  and `agent.failed` events: expect busy, idle, and idle observations respectively,
+  separate from registry status. An agent without such events has no observed
+  status. These are latest explicit observations, not aggregate concurrency
+  guarantees. See [agent status](../src/application/state/agentStatus.ts) and
+  [AgentPanel](../src/presentation/components/organisms/AgentPanel.tsx).
+- [ ] Supply approval snapshots with fictional preview fields and each of
+  pending, approved, rejected, expired, and superseded: expect exact supplied
+  preview text and visible status, including ordinary expired/superseded outcomes.
+  Decision submission, retry idempotency, in-flight disabling, and backend
+  authorization rejection cannot be verified through the current cards; leave
+  those checks blocked until a decision flow exists.
+- [ ] Make conversation creation fail, then separately fail each snapshot load:
+  expect fixed initialization or panel load errors, without mock data replacing
+  the failed request. Fail a message request: expect its entry to become failed.
+- [ ] Interrupt an established event connection, then restore it: expect a
+  reconnecting notice with retained observations and reconnection with
+  `Last-Event-ID` equal to the highest accepted sequence. Duplicate/older events
+  must not add duplicate timeline rows. A malformed stream should produce the
+  fixed stream failure notice. See [SseClient](../src/infrastructure/sse/SseClient.ts).
+- [ ] Send sequence 1 followed by 3 on a fresh stream: expect the activity
+  resynchronization warning, retained prior events, and stopped consumption.
+  There is no automatic gap repair. The rejected event does not enter the store,
+  so task/agent panels need not display a missing range for this transport gap.
+  See [activity state](../src/application/state/conversationActivity.ts).
+- [ ] Return HTTP 401 during conversation creation: expect reload/sign-in guidance
+  across chat and operational regions. Return 401 on the event connection:
+  expect activity authentication guidance and stopped updates. Reload and sign
+  in again to begin cleanly. Separately return 401 on a message or snapshot load:
+  current controllers show generic submission/load failure, not a global
+  reauthentication transition.
+- [ ] Supply an operational failure whose payload carries `AUTH_CONTEXT_EXPIRED`:
+  expect only the operational event label today. The
+  [parser](../src/infrastructure/sse/parser.ts) leaves payloads opaque; this code
+  does not convert that payload into a reauthentication prompt. Record this
+  limitation separately from HTTP 401 handling.
+
+## Remaining limits and human decisions
+
+The [session hook](../src/presentation/hooks/useChatSession.ts) starts task,
+approval, and registry snapshots once. It does not wire their refresh methods
+to events or expose refresh controls. Newly created tasks/approvals may therefore
+be absent, and approval statuses may remain stale while timeline events arrive.
+Task relationships are shown as parent IDs, not a nested tree. Chat displays
+submission acknowledgments, not assistant response content. Stream authentication
+failure does not disable the ready chat composer; later sends can fail generically.
+There is no in-place sign-in recovery or resynchronization action.
+
+Visual polish awaits **Q-001**; no design system is selected here. Role-aware UI
+awaits **Q-002**, and an accessibility target awaits **Q-003**, as recorded in
+[architecture decisions](../.loop/ARCHITECTURE_DECISIONS.md). This guide makes no
+production-readiness or accessibility-conformance claim. Current progress is
+recorded in [.loop/STATE.json](../.loop/STATE.json); the earlier HANDOFF checkpoint
+does not establish present behavior. Completing this documentation slice does
+not resolve those decisions or establish that the manual checks passed.
