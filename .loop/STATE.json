@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 26,
+  "iteration": 27,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -30,14 +30,15 @@
     "FE-011A",
     "FE-011B",
     "FE-011C",
-    "FE-011D"
+    "FE-011D",
+    "FE-012A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-011D",
+    "task_id": "FE-012A",
     "verdict": "approve",
-    "summary": "FE-011D meets the task and architecture requirements. Approval snapshots use the shared mock session, preserve lifecycle cleanup, load independently of chat, and render existing cards with correct loading, failure, and empty states. Only allowed files changed. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T16:36:46Z",
+    "summary": "FE-012A meets the task and architecture requirements. The three allowed files add separate snapshot and event-observed counts with uncertainty notices, preserve independent chat submission and draft behavior, and introduce no transport or persistence changes. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T16:39:05Z",
     "provider": "codex"
   },
   "notes": [
@@ -48,7 +49,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 26,
+    "slot": 27,
     "last_provider": "codex",
     "claude_review_every": 0
   }

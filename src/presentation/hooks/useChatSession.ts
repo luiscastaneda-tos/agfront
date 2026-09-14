@@ -23,6 +23,7 @@ import type {
 import { createApprovalCards } from "../view-models/approvalCards";
 import { createTaskQueue } from "../view-models/taskQueue";
 import { createAgentPanel } from "../view-models/agentPanel";
+import { createBackgroundWork } from "../view-models/backgroundWork";
 
 interface ChatSessionControllers {
   chat: ChatSubmissionController;
@@ -63,6 +64,11 @@ export function useChatSession(
     }
     return createTaskQueue(tasks.conversationId, tasks.tasks, store);
   }, [tasks, activity]);
+  const backgroundWork = useMemo(() => createBackgroundWork(
+    taskQueue,
+    tasks?.load ?? null,
+    activity?.stream ?? null,
+  ), [taskQueue, tasks, activity]);
 
   useEffect(() => {
     let active = true;
@@ -174,6 +180,7 @@ export function useChatSession(
     activity,
     tasks,
     taskQueue,
+    backgroundWork,
     registry,
     agentPanel,
     approvals,

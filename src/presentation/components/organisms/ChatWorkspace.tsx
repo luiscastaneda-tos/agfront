@@ -1,10 +1,12 @@
 import type { ChatSubmission } from "../../../application/state/chatSubmissions";
+import type { BackgroundWork } from "../../view-models/backgroundWork";
 
 interface ChatWorkspaceProps {
   status: "pending" | "ready" | "failed";
   submissions: readonly ChatSubmission[];
   draft: string;
   canSubmit: boolean;
+  backgroundWork: BackgroundWork;
   onDraftChange: (draft: string) => void;
   onSubmit: () => void;
 }
@@ -14,6 +16,7 @@ export function ChatWorkspace({
   submissions,
   draft,
   canSubmit,
+  backgroundWork,
   onDraftChange,
   onSubmit,
 }: ChatWorkspaceProps) {
@@ -36,6 +39,23 @@ export function ChatWorkspace({
             />
             <button type="submit" disabled={!canSubmit}>Send</button>
           </form>
+          <section aria-labelledby="background-work-heading">
+            <h2 id="background-work-heading">Observed background activity</h2>
+            <p>
+              Counts cover tasks in the loaded queue only. Snapshot statuses have no
+              sequence watermark and are separate from event observations. These
+              counts do not establish current state; zero observations do not mean
+              all work has finished.
+            </p>
+            <ul>
+              {backgroundWork.counts.map((count) => (
+                <li key={count.label}>
+                  {count.label}: {count.observed} event-observed; {count.snapshot} in task snapshot.
+                </li>
+              ))}
+            </ul>
+            {backgroundWork.notices.map((notice) => <p key={notice}>{notice}</p>)}
+          </section>
           <h2>Submission history</h2>
           {submissions.length === 0 ? <p>No messages submitted yet.</p> : (
             <ol>
