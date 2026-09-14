@@ -1,6 +1,7 @@
 import { createAgentRegistryController } from "../../application/state/agentRegistry";
 import { createChatSubmissionController } from "../../application/state/chatSubmissions";
 import { createConversationActivityController } from "../../application/state/conversationActivity";
+import { createConversationApprovalsController } from "../../application/state/conversationApprovals";
 import { createConversationTasksController } from "../../application/state/conversationTasks";
 import { MockTransport } from "../../transport/MockTransport";
 
@@ -12,5 +13,6 @@ export async function createMockChatSession() {
     activity: createConversationActivityController(conversation.id, transport),
     tasks: createConversationTasksController(conversation.id, transport),
     registry: createAgentRegistryController(transport),
+    approvals: createConversationApprovalsController(conversation.id, transport),
   };
 }

@@ -5,12 +5,11 @@ import { ChatWorkspace } from "../presentation/components/organisms/ChatWorkspac
 import { ActivityTimeline } from "../presentation/components/organisms/ActivityTimeline";
 import { TaskQueue } from "../presentation/components/organisms/TaskQueue";
 import { AgentPanel } from "../presentation/components/organisms/AgentPanel";
+import { ApprovalCards } from "../presentation/components/organisms/ApprovalCards";
 import { createActivityTimeline } from "../presentation/view-models/activityTimeline";
 import { useChatSession } from "../presentation/hooks/useChatSession";
 import { createMockChatSession } from "./bootstrap/createMockChatSession";
 import "./app.css";
-
-const operationalRegions = ["Approvals"];
 
 function AuthenticatedWorkspace() {
   const session = useChatSession(createMockChatSession);
@@ -58,12 +57,18 @@ function AuthenticatedWorkspace() {
             <AgentPanel panel={session.agentPanel} />
           ) : null}
         </div>
-        {operationalRegions.map((region) => (
-          <section className="placeholder-region" key={region}>
-            <h2>{region}</h2>
-            <p>This operational view will appear here.</p>
-          </section>
-        ))}
+        <div className="placeholder-region">
+          {session.status === "pending" ? <p>Preparing approvals...</p> : null}
+          {session.status === "failed" ? <p>Approvals could not be initialized.</p> : null}
+          {session.approvals?.load.status === "idle" ? <p>Preparing approvals...</p> : null}
+          {session.approvals?.load.status === "loading" ? <p>Loading approvals...</p> : null}
+          {session.approvals?.load.status === "failed" ? (
+            <p>The approval list could not be loaded.</p>
+          ) : null}
+          {session.approvalCards && (session.approvals?.load.status === "ready" || session.approvalCards.length > 0) ? (
+            <ApprovalCards rows={session.approvalCards} />
+          ) : null}
+        </div>
       </>}
     />
   );

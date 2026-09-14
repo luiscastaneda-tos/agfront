@@ -16,6 +16,11 @@ import type {
   ConversationTasksSnapshot,
 } from "../../application/state/conversationTasks";
 import { createEventStore } from "../../application/state/eventStore";
+import type {
+  ConversationApprovalsController,
+  ConversationApprovalsSnapshot,
+} from "../../application/state/conversationApprovals";
+import { createApprovalCards } from "../view-models/approvalCards";
 import { createTaskQueue } from "../view-models/taskQueue";
 import { createAgentPanel } from "../view-models/agentPanel";
 
@@ -24,6 +29,7 @@ interface ChatSessionControllers {
   activity: ConversationActivityController;
   tasks: ConversationTasksController;
   registry: AgentRegistryController;
+  approvals: ConversationApprovalsController;
 }
 
 type SessionStatus = "pending" | "ready" | "failed";
@@ -38,6 +44,11 @@ export function useChatSession(
   const [activity, setActivity] = useState<ConversationActivitySnapshot | null>(null);
   const [tasks, setTasks] = useState<ConversationTasksSnapshot | null>(null);
   const [registry, setRegistry] = useState<AgentRegistrySnapshot | null>(null);
+  const [approvals, setApprovals] = useState<ConversationApprovalsSnapshot | null>(null);
+  const approvalCards = useMemo(() => {
+    if (!approvals) return null;
+    return createApprovalCards(approvals.conversationId, approvals.approvals);
+  }, [approvals]);
   const agentPanel = useMemo(() => {
     if (!registry || !activity) return null;
     const store = createEventStore();
@@ -59,6 +70,7 @@ export function useChatSession(
     let unsubscribeActivity: (() => void) | undefined;
     let unsubscribeTasks: (() => void) | undefined;
     let unsubscribeRegistry: (() => void) | undefined;
+    let unsubscribeApprovals: (() => void) | undefined;
     let ownedSession: ChatSessionControllers | undefined;
     controllerRef.current = null;
     setStatus("pending");
@@ -67,15 +79,18 @@ export function useChatSession(
     setActivity(null);
     setTasks(null);
     setRegistry(null);
+    setApprovals(null);
 
     function releaseSession() {
       unsubscribe?.();
       unsubscribeActivity?.();
       unsubscribeTasks?.();
       unsubscribeRegistry?.();
+      unsubscribeApprovals?.();
       ownedSession?.activity.dispose();
       ownedSession?.tasks.dispose();
       ownedSession?.registry.dispose();
+      ownedSession?.approvals.dispose();
     }
 
     async function initialize() {
@@ -85,6 +100,7 @@ export function useChatSession(
           session.activity.dispose();
           session.tasks.dispose();
           session.registry.dispose();
+          session.approvals.dispose();
           return;
         }
         ownedSession = session;
@@ -107,14 +123,20 @@ export function useChatSession(
           if (active) setRegistry(session.registry.getSnapshot());
         };
         unsubscribeRegistry = session.registry.subscribe(refreshRegistry);
+        const refreshApprovals = () => {
+          if (active) setApprovals(session.approvals.getSnapshot());
+        };
+        unsubscribeApprovals = session.approvals.subscribe(refreshApprovals);
         refresh();
         refreshActivity();
         refreshTasks();
         refreshRegistry();
+        refreshApprovals();
         session.activity.start();
         setStatus("ready");
         session.tasks.start();
         session.registry.start();
+        session.approvals.start();
       } catch {
         releaseSession();
         if (active) {
@@ -122,6 +144,7 @@ export function useChatSession(
           setActivity(null);
           setTasks(null);
           setRegistry(null);
+          setApprovals(null);
           setStatus("failed");
         }
         active = false;
@@ -153,6 +176,8 @@ export function useChatSession(
     taskQueue,
     registry,
     agentPanel,
+    approvals,
+    approvalCards,
     draft,
     canSubmit: status === "ready" && draft.trim().length > 0,
     onDraftChange: setDraft,
