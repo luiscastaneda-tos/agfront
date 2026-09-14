@@ -7,7 +7,7 @@ interface SubmissionContent {
 
 export type ChatSubmission = SubmissionContent & (
   | { status: 'pending' }
-  | { status: 'accepted'; messageId: string }
+  | { status: 'accepted'; messageId: string; createdTaskIds: string[] }
   | { status: 'failed'; failureDescription: string }
 );
 
@@ -59,6 +59,7 @@ export function createChatSubmissionController(
           ...entry,
           status: 'accepted',
           messageId: response.messageId,
+          createdTaskIds: [...response.createdTaskIds],
         });
       } catch {
         submissions.set(clientMessageId, {
@@ -70,8 +71,11 @@ export function createChatSubmissionController(
       notify();
       return clientMessageId;
     },
-    // Entries contain only primitives, so copying each entry is defensive.
-    getSnapshot: () => [...submissions.values()].map((entry) => ({ ...entry })),
+    getSnapshot: () => [...submissions.values()].map((entry) => (
+      entry.status === 'accepted'
+        ? { ...entry, createdTaskIds: [...entry.createdTaskIds] }
+        : { ...entry }
+    )),
     subscribe(listener) {
       const subscription = () => listener();
       listeners.add(subscription);
