@@ -185,10 +185,24 @@ POST /approvals/:id/decision
 POST /conversations
 POST /conversations/:id/messages
 GET  /conversations/:id/tasks
+GET  /conversations/:id/approvals
 ```
 
 - `GET /agents`, `GET /conversations/:id/events`, `POST /approvals/:id/decision` are already aligned with existing backend controllers.
-- `POST /conversations`, `POST /conversations/:id/messages`, `GET /conversations/:id/tasks` are frozen as HTTP V1 contract to align with ongoing backend conversation/task work, but are not treated as already implemented until the backend exposes them.
+- `POST /conversations`, `POST /conversations/:id/messages`, `GET /conversations/:id/tasks`, `GET /conversations/:id/approvals` are frozen as HTTP V1 contract to align with ongoing backend conversation/task/approval work, but are not treated as already implemented until the backend exposes their controllers.
+
+#### Amendment (2026-09-14) — Conversation approvals snapshot endpoint
+Recorded while resolving the second FE-013 HUMAN_GATE on 2026-09-14.
+
+- Route: `GET /conversations/:id/approvals`
+  - Status: 200 OK
+  - Body: `ApprovalRequest[]`
+  - Returns the current snapshot of approvals for the conversation indicated by `:id`.
+  - Maintains strict symmetry with `GET /conversations/:id/tasks` and `GET /conversations/:id/events`.
+  - `GET /approvals?conversationId=...` is forbidden for V1.
+- `HttpTransport.listApprovals(conversationId)` must consume exclusively `GET /conversations/:id/approvals`.
+- Note: `listByConversation(conversationId)` in `in-memory-approval.store.ts` confirms backend domain readiness, but the endpoint must not be declared as implemented until its HTTP controller exists in the backend.
+- If any other uncovered operation appears in future tasks, the Architect must not invent additional endpoints: raise a HUMAN_GATE.
 
 #### 2. Configuration
 Configured via:
