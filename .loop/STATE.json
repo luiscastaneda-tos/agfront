@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 14,
+  "iteration": 15,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -18,14 +18,15 @@
     "FE-007B",
     "FE-008A",
     "FE-008B",
-    "FE-008C"
+    "FE-008C",
+    "FE-009A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-008C",
+    "task_id": "FE-009A",
     "verdict": "approve",
-    "summary": "FE-008C meets task and architecture requirements. Chat and activity share one mock session; subscriptions, stream cleanup, late initialization, and neutral activity states are handled correctly. Only allowed files changed. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T15:51:01Z",
+    "summary": "FE-009A meets task and architecture requirements. The projection preserves snapshot order, filters and deduplicates tasks, separates snapshot status from event observations, and exposes sequence gaps even for empty queues. Only the allowed file changed. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:53:04Z",
     "provider": "codex"
   },
   "notes": [
@@ -36,7 +37,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 14,
+    "slot": 15,
     "last_provider": "codex",
     "claude_review_every": 0
   }
