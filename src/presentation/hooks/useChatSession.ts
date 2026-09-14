@@ -23,6 +23,7 @@ import { createApprovalCards } from "../view-models/approvalCards";
 import { createTaskQueue } from "../view-models/taskQueue";
 import { createAgentPanel } from "../view-models/agentPanel";
 import { createBackgroundWork } from "../view-models/backgroundWork";
+import { createChatResponses } from "../view-models/chatResponses";
 import type { ChatSessionControllers } from "../../application/use-cases/createChatSession";
 
 type SessionStatus = "pending" | "ready" | "failed" | "authentication-required";
@@ -39,6 +40,10 @@ export function useChatSession(
   const [tasks, setTasks] = useState<ConversationTasksSnapshot | null>(null);
   const [registry, setRegistry] = useState<AgentRegistrySnapshot | null>(null);
   const [approvals, setApprovals] = useState<ConversationApprovalsSnapshot | null>(null);
+  const responses = useMemo(() => {
+    if (!tasks) return [];
+    return createChatResponses(tasks.conversationId, submissions, tasks.tasks);
+  }, [submissions, tasks]);
   const approvalCards = useMemo(() => {
     if (!approvals) return null;
     return createApprovalCards(approvals.conversationId, approvals.approvals, approvals.decisions);
@@ -180,6 +185,7 @@ export function useChatSession(
   return {
     status,
     submissions,
+    responses,
     activity,
     tasks,
     taskQueue,

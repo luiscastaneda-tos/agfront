@@ -1,9 +1,11 @@
 import type { ChatSubmission } from "../../../application/state/chatSubmissions";
 import type { BackgroundWork } from "../../view-models/backgroundWork";
+import type { ChatResponseMessage } from "../../view-models/chatResponses";
 
 interface ChatWorkspaceProps {
   status: "pending" | "ready" | "failed" | "authentication-required";
   submissions: readonly ChatSubmission[];
+  responses: readonly ChatResponseMessage[];
   draft: string;
   canSubmit: boolean;
   backgroundWork: BackgroundWork;
@@ -14,6 +16,7 @@ interface ChatWorkspaceProps {
 export function ChatWorkspace({
   status,
   submissions,
+  responses,
   draft,
   canSubmit,
   backgroundWork,
@@ -72,6 +75,14 @@ export function ChatWorkspace({
                     <p>Accepted: the request was accepted. Background work may still be continuing.</p>
                   ) : null}
                   {submission.status === "failed" ? <p>Failed: the message could not be submitted.</p> : null}
+                  {responses.filter((response) => response.clientMessageId === submission.clientMessageId).map((response) => (
+                    <div key={response.id}>
+                      <p>{response.status === "completed" ? "Assistant response" : "Task failed"}</p>
+                      <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                        {response.content}
+                      </p>
+                    </div>
+                  ))}
                 </li>
               ))}
             </ol>
