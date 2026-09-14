@@ -172,6 +172,49 @@ Recorded per agreement in session handoff before FE-005.
 - No preventive mass refactor. From the next tasks onward the Architect respects the structure
   and moves existing code gradually when it touches it.
 
+### D-013 - Backend HTTP API V1
+
+Recorded while resolving the FE-013 HUMAN_GATE on 2026-09-14.
+Freezes the HTTP API specification consumed by `HttpTransport`.
+
+#### 1. Endpoints
+```text
+GET  /agents
+GET  /conversations/:id/events
+POST /approvals/:id/decision
+POST /conversations
+POST /conversations/:id/messages
+GET  /conversations/:id/tasks
+```
+
+- `GET /agents`, `GET /conversations/:id/events`, `POST /approvals/:id/decision` are already aligned with existing backend controllers.
+- `POST /conversations`, `POST /conversations/:id/messages`, `GET /conversations/:id/tasks` are frozen as HTTP V1 contract to align with ongoing backend conversation/task work, but are not treated as already implemented until the backend exposes them.
+
+#### 2. Configuration
+Configured via:
+```text
+VITE_BACKEND_URL=<your-backend-url>
+```
+in `.env.example`, using a placeholder that does not begin with an alphanumeric character (per D-011 Clarification 1).
+
+#### 3. Transport & Security Rules
+- `HttpTransport` must consume exclusively this specification; do not invent additional routes.
+- Bearer token only in Authorization header (`Authorization: Bearer <token>`).
+- Never put token in a query string or URL.
+- SSE via `fetch` + `ReadableStream` (not `EventSource`) to send the Authorization header.
+- `Last-Event-ID` header sent per authenticated stream contract.
+- `POST /approvals/:id/decision` payload shape:
+  ```json
+  {
+    "decision": "approve | reject",
+    "idempotencyKey": "..."
+  }
+  ```
+- The frontend must not invent payloads or response shapes outside frozen 1.0.0 contracts.
+- Do NOT modify `src/contracts/` or `contracts.lock`.
+- If a frozen route does not exist yet in the backend, `HttpTransport` may implement against it, but real network calls must fail explicitly; no silent fallback to mocks inside `HttpTransport`.
+- `MockTransport` remains as a separate implementation for dev/demo, never as a hidden fallback of `HttpTransport`.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
