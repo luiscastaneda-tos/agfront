@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 8,
+  "iteration": 9,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -12,14 +12,15 @@
     "FE-004",
     "FE-005",
     "FE-006A",
-    "FE-006B"
+    "FE-006B",
+    "FE-006C"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-006B",
+    "task_id": "FE-006C",
     "verdict": "approve",
-    "summary": "FE-006B meets the task criteria and architecture rules. The selector uses ordered, task-scoped snapshots, returns explicit observed status and sequence, and reports fresh conversation gaps without inspecting payloads or adding state. Changes stay within allowed paths. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T15:33:13Z",
+    "summary": "FE-006C meets acceptance criteria and architecture requirements. The stateless selector uses scoped, ordered snapshots, preserves the latest explicit observation, and reports fresh conversation-wide gaps. Changes stay within allowed paths. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:36:01Z",
     "provider": "codex"
   },
   "notes": [
@@ -30,7 +31,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 8,
+    "slot": 9,
     "last_provider": "codex",
     "claude_review_every": 0
   }
