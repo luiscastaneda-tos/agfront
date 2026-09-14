@@ -17,11 +17,40 @@ export async function createChatSession(
   transport: AgentTransport,
 ): Promise<ChatSessionControllers> {
   const conversation = await transport.createConversation();
+  const activity = createConversationActivityController(conversation.id, transport);
+  const approvals = createConversationApprovalsController(conversation.id, transport);
+  // Track individual sequences so accepted events filling earlier gaps invalidate too.
+  const observedApprovalSequences = new Set<number>();
+  const unsubscribeActivity = activity.subscribe(() => {
+    let invalidated = false;
+    for (const event of activity.getSnapshot().events) {
+      if (event.conversationId !== conversation.id
+        || observedApprovalSequences.has(event.seq)) continue;
+      switch (event.type) {
+        case 'approval.requested':
+        case 'approval.approved':
+        case 'approval.rejected':
+        case 'approval.expired':
+        case 'approval.superseded':
+          observedApprovalSequences.add(event.seq);
+          invalidated = true;
+      }
+    }
+    if (invalidated) approvals.refresh();
+  });
+
   return {
     chat: createChatSubmissionController(conversation.id, transport),
-    activity: createConversationActivityController(conversation.id, transport),
+    activity,
     tasks: createConversationTasksController(conversation.id, transport),
     registry: createAgentRegistryController(transport),
-    approvals: createConversationApprovalsController(conversation.id, transport),
+    approvals: {
+      ...approvals,
+      dispose() {
+        unsubscribeActivity();
+        observedApprovalSequences.clear();
+        approvals.dispose();
+      },
+    },
   };
 }

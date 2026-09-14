@@ -40,6 +40,7 @@ export function createConversationApprovalsController(
   let load: ConversationApprovalsLoadState = { status: 'idle' };
   let started = false;
   let pending = false;
+  let refreshQueued = false;
   let disposed = false;
   const decisions = new Map<string, ApprovalDecisionState>();
   const intents = new Map<string, ApprovalDecision>();
@@ -88,13 +89,24 @@ export function createConversationApprovalsController(
         failureDescription: 'The approval list could not be loaded.',
       };
     } finally {
-      if (!disposed) pending = false;
+      if (!disposed) {
+        // Keep pending through publication so reentrant invalidations coalesce too.
+        notify();
+        pending = false;
+        if (refreshQueued && !disposed) {
+          refreshQueued = false;
+          refresh();
+        }
+      }
     }
-    if (!disposed) notify();
   }
 
   function refresh(): void {
-    if (disposed || pending) return;
+    if (disposed) return;
+    if (pending) {
+      refreshQueued = true;
+      return;
+    }
     started = true;
     // Guard before notifying because observers can call start or refresh.
     pending = true;
@@ -175,6 +187,7 @@ export function createConversationApprovalsController(
     dispose() {
       if (disposed) return;
       disposed = true;
+      refreshQueued = false;
       listeners.clear();
     },
   };
