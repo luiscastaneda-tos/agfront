@@ -2,7 +2,7 @@ import type { ChatSubmission } from "../../../application/state/chatSubmissions"
 import type { BackgroundWork } from "../../view-models/backgroundWork";
 
 interface ChatWorkspaceProps {
-  status: "pending" | "ready" | "failed";
+  status: "pending" | "ready" | "failed" | "authentication-required";
   submissions: readonly ChatSubmission[];
   draft: string;
   canSubmit: boolean;
@@ -26,6 +26,9 @@ export function ChatWorkspace({
       {status === "pending" ? <p>Preparing the conversation...</p> : null}
       {status === "failed" ? (
         <p>The conversation could not be initialized. Reload to try again.</p>
+      ) : null}
+      {status === "authentication-required" ? (
+        <p>Authentication is required. Reload and sign in again. Reloading starts a clean demo session.</p>
       ) : null}
       {status === "ready" ? (
         <>

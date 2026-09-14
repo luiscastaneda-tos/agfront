@@ -22,6 +22,7 @@ function AuthenticatedWorkspace() {
         <div className="placeholder-region">
           {session.status === "pending" ? <p>Preparing activity...</p> : null}
           {session.status === "failed" ? <p>Activity could not be initialized.</p> : null}
+          {session.status === "authentication-required" ? <p>Activity requires authentication. Reload and sign in again.</p> : null}
           {activity ? <>
             {activity.stream.status === "connecting" ? (
               <p>Connecting to activity updates. Observations may be incomplete.</p>
@@ -46,6 +47,7 @@ function AuthenticatedWorkspace() {
         <div className="placeholder-region">
           {session.status === "pending" ? <p>Preparing tasks...</p> : null}
           {session.status === "failed" ? <p>Tasks could not be initialized.</p> : null}
+          {session.status === "authentication-required" ? <p>Tasks require authentication. Reload and sign in again.</p> : null}
           {session.tasks?.load.status === "idle" ? <p>Preparing tasks...</p> : null}
           {session.tasks?.load.status === "loading" ? <p>Loading tasks...</p> : null}
           {session.tasks?.load.status === "failed" ? (
@@ -58,6 +60,7 @@ function AuthenticatedWorkspace() {
         <div className="placeholder-region">
           {session.status === "pending" ? <p>Preparing agents...</p> : null}
           {session.status === "failed" ? <p>Agents could not be initialized.</p> : null}
+          {session.status === "authentication-required" ? <p>Agents require authentication. Reload and sign in again.</p> : null}
           {session.registry?.load.status === "idle" ? <p>Preparing agents...</p> : null}
           {session.registry?.load.status === "loading" ? <p>Loading agents...</p> : null}
           {session.registry?.load.status === "failed" ? (
@@ -70,6 +73,7 @@ function AuthenticatedWorkspace() {
         <div className="placeholder-region">
           {session.status === "pending" ? <p>Preparing approvals...</p> : null}
           {session.status === "failed" ? <p>Approvals could not be initialized.</p> : null}
+          {session.status === "authentication-required" ? <p>Approvals require authentication. Reload and sign in again.</p> : null}
           {session.approvals?.load.status === "idle" ? <p>Preparing approvals...</p> : null}
           {session.approvals?.load.status === "loading" ? <p>Loading approvals...</p> : null}
           {session.approvals?.load.status === "failed" ? (

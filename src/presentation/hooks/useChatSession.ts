@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AuthenticationRequiredError } from "../../application/ports/streamErrors";
 import type {
   AgentRegistrySnapshot,
 } from "../../application/state/agentRegistry";
@@ -22,7 +23,7 @@ import { createAgentPanel } from "../view-models/agentPanel";
 import { createBackgroundWork } from "../view-models/backgroundWork";
 import type { ChatSessionControllers } from "../../application/use-cases/createChatSession";
 
-type SessionStatus = "pending" | "ready" | "failed";
+type SessionStatus = "pending" | "ready" | "failed" | "authentication-required";
 
 export function useChatSession(
   createSession: () => Promise<ChatSessionControllers>,
@@ -132,7 +133,7 @@ export function useChatSession(
         session.tasks.start();
         session.registry.start();
         session.approvals.start();
-      } catch {
+      } catch (error) {
         releaseSession();
         if (active) {
           controllerRef.current = null;
@@ -140,7 +141,7 @@ export function useChatSession(
           setTasks(null);
           setRegistry(null);
           setApprovals(null);
-          setStatus("failed");
+          setStatus(error instanceof AuthenticationRequiredError ? "authentication-required" : "failed");
         }
         active = false;
       }
