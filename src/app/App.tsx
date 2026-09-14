@@ -4,12 +4,13 @@ import { ApplicationLayout } from "../components/layout/ApplicationLayout";
 import { ChatWorkspace } from "../presentation/components/organisms/ChatWorkspace";
 import { ActivityTimeline } from "../presentation/components/organisms/ActivityTimeline";
 import { TaskQueue } from "../presentation/components/organisms/TaskQueue";
+import { AgentPanel } from "../presentation/components/organisms/AgentPanel";
 import { createActivityTimeline } from "../presentation/view-models/activityTimeline";
 import { useChatSession } from "../presentation/hooks/useChatSession";
 import { createMockChatSession } from "./bootstrap/createMockChatSession";
 import "./app.css";
 
-const operationalRegions = ["Agents", "Approvals"];
+const operationalRegions = ["Approvals"];
 
 function AuthenticatedWorkspace() {
   const session = useChatSession(createMockChatSession);
@@ -43,6 +44,18 @@ function AuthenticatedWorkspace() {
           ) : null}
           {session.taskQueue && (session.tasks?.load.status === "ready" || session.taskQueue.rows.length > 0) ? (
             <TaskQueue queue={session.taskQueue} />
+          ) : null}
+        </div>
+        <div className="placeholder-region">
+          {session.status === "pending" ? <p>Preparing agents...</p> : null}
+          {session.status === "failed" ? <p>Agents could not be initialized.</p> : null}
+          {session.registry?.load.status === "idle" ? <p>Preparing agents...</p> : null}
+          {session.registry?.load.status === "loading" ? <p>Loading agents...</p> : null}
+          {session.registry?.load.status === "failed" ? (
+            <p>The agent registry could not be loaded.</p>
+          ) : null}
+          {session.agentPanel && (session.registry?.load.status === "ready" || session.agentPanel.rows.length > 0) ? (
+            <AgentPanel panel={session.agentPanel} />
           ) : null}
         </div>
         {operationalRegions.map((region) => (

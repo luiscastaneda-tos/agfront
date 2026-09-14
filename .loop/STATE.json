@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 21,
+  "iteration": 22,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -25,14 +25,15 @@
     "FE-009D",
     "FE-010A",
     "FE-010B",
-    "FE-010C"
+    "FE-010C",
+    "FE-010D"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-010C",
+    "task_id": "FE-010D",
     "verdict": "approve",
-    "summary": "FE-010C meets the acceptance criteria and architecture rules. The sole added file renders the existing view model using TaskQueue conventions, preserves supplied order, separates statuses, and handles empty and resynchronization states. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T16:07:54Z",
+    "summary": "FE-010D meets the task and architecture requirements. Only the three allowed files changed. Registry lifecycle cleanup, independent loading failures, existing event-driven observations, and successful empty-state rendering are correctly integrated. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T16:10:30Z",
     "provider": "codex"
   },
   "notes": [
@@ -43,7 +44,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 21,
+    "slot": 22,
     "last_provider": "codex",
     "claude_review_every": 0
   }

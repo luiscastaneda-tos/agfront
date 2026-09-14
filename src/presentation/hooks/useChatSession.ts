@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
+  AgentRegistryController,
+  AgentRegistrySnapshot,
+} from "../../application/state/agentRegistry";
+import type {
   ChatSubmission,
   ChatSubmissionController,
 } from "../../application/state/chatSubmissions";
@@ -13,11 +17,13 @@ import type {
 } from "../../application/state/conversationTasks";
 import { createEventStore } from "../../application/state/eventStore";
 import { createTaskQueue } from "../view-models/taskQueue";
+import { createAgentPanel } from "../view-models/agentPanel";
 
 interface ChatSessionControllers {
   chat: ChatSubmissionController;
   activity: ConversationActivityController;
   tasks: ConversationTasksController;
+  registry: AgentRegistryController;
 }
 
 type SessionStatus = "pending" | "ready" | "failed";
@@ -31,6 +37,13 @@ export function useChatSession(
   const [draft, setDraft] = useState("");
   const [activity, setActivity] = useState<ConversationActivitySnapshot | null>(null);
   const [tasks, setTasks] = useState<ConversationTasksSnapshot | null>(null);
+  const [registry, setRegistry] = useState<AgentRegistrySnapshot | null>(null);
+  const agentPanel = useMemo(() => {
+    if (!registry || !activity) return null;
+    const store = createEventStore();
+    store.ingestBatch(activity.events);
+    return createAgentPanel(activity.conversationId, registry.agents, store);
+  }, [registry, activity]);
   const taskQueue = useMemo(() => {
     if (!tasks) return null;
     const store = createEventStore();
@@ -45,6 +58,7 @@ export function useChatSession(
     let unsubscribe: (() => void) | undefined;
     let unsubscribeActivity: (() => void) | undefined;
     let unsubscribeTasks: (() => void) | undefined;
+    let unsubscribeRegistry: (() => void) | undefined;
     let ownedSession: ChatSessionControllers | undefined;
     controllerRef.current = null;
     setStatus("pending");
@@ -52,13 +66,16 @@ export function useChatSession(
     setDraft("");
     setActivity(null);
     setTasks(null);
+    setRegistry(null);
 
     function releaseSession() {
       unsubscribe?.();
       unsubscribeActivity?.();
       unsubscribeTasks?.();
+      unsubscribeRegistry?.();
       ownedSession?.activity.dispose();
       ownedSession?.tasks.dispose();
+      ownedSession?.registry.dispose();
     }
 
     async function initialize() {
@@ -67,6 +84,7 @@ export function useChatSession(
         if (!active) {
           session.activity.dispose();
           session.tasks.dispose();
+          session.registry.dispose();
           return;
         }
         ownedSession = session;
@@ -85,18 +103,25 @@ export function useChatSession(
           if (active) setTasks(session.tasks.getSnapshot());
         };
         unsubscribeTasks = session.tasks.subscribe(refreshTasks);
+        const refreshRegistry = () => {
+          if (active) setRegistry(session.registry.getSnapshot());
+        };
+        unsubscribeRegistry = session.registry.subscribe(refreshRegistry);
         refresh();
         refreshActivity();
         refreshTasks();
+        refreshRegistry();
         session.activity.start();
         setStatus("ready");
         session.tasks.start();
+        session.registry.start();
       } catch {
         releaseSession();
         if (active) {
           controllerRef.current = null;
           setActivity(null);
           setTasks(null);
+          setRegistry(null);
           setStatus("failed");
         }
         active = false;
@@ -126,6 +151,8 @@ export function useChatSession(
     activity,
     tasks,
     taskQueue,
+    registry,
+    agentPanel,
     draft,
     canSubmit: status === "ready" && draft.trim().length > 0,
     onDraftChange: setDraft,
