@@ -1,8 +1,8 @@
 # Demo human review
 
-This guide covers the current source through FE-007C and FE-007D, documented in
-FE-015D, including event-driven task and approval snapshot refresh and
-asynchronous chat responses projected from task snapshots. It records expected behavior,
+This guide covers the current source through FE-014E, including event-driven
+task and approval snapshot refresh, asynchronous chat responses projected from
+task snapshots, and task authentication-expiry guidance. It records expected behavior,
 not completed verification. All manual checks below are unperformed. Backend-dependent
 checks remain unverified until performed with a running backend and controlled
 fictional scenarios. No backend endpoint availability is asserted here.
@@ -147,6 +147,25 @@ whitespace preserved, not interpreted HTML. Multiple correlated tasks can
 produce separate responses; refreshed snapshots recompute these responses
 rather than appending duplicate messages. The ready composer remains usable
 while submissions or background tasks are pending.
+
+## Task authentication-expiry guidance
+
+The hook passes the authoritative task controller snapshot into the
+[background-work projection](../src/presentation/view-models/backgroundWork.ts).
+If any task belonging to that snapshot's current conversation is `failed` with
+`failure.code === "AUTH_CONTEXT_EXPIRED"`, the existing background-work notice
+area shows one fixed message: "A task's authentication context has expired.
+Reload and sign in again. Reloading starts a clean demo session."
+Multiple matching tasks produce only one notice. Each snapshot recomputes it;
+a subsequent snapshot without matching failures removes it. Retained snapshots
+during loading or load failure can retain the notice, alongside existing load
+notices. Other conversations, other failure codes, and non-failed tasks do not
+trigger it. No failure details or `authContextId` are inserted into the notice.
+
+This is guidance only: composer availability, approval behavior, counts, and
+stream notices stay unchanged. It makes no authorization decision and does not
+perform authentication recovery. SSE payloads remain opaque and cannot supply
+this notice; events can only trigger a task snapshot refresh as described above.
 
 ## Locally inspectable review
 
@@ -302,11 +321,22 @@ outside this frontend; no scenario controls are implemented in App.
   in again to begin cleanly. Separately return 401 on a message or snapshot load:
   current controllers show generic submission/load failure, not a global
   reauthentication transition.
-- [ ] Supply an operational failure whose payload carries `AUTH_CONTEXT_EXPIRED`:
+- [ ] Task authentication expiry (unperformed): supply a fictional current-
+  conversation task snapshot with one failed task whose `failure.code` is
+  `AUTH_CONTEXT_EXPIRED`. Expect exactly one fixed reload/sign-in notice in
+  background activity, explaining that reload starts a clean demo session.
+  Add another matching failed task and refresh: expect still one notice.
+  Replace them with tasks from another conversation, tasks with other failure
+  codes, or non-failed tasks: expect the task-derived notice to disappear.
+  Also refresh to an empty snapshot: expect no task-derived notice. Throughout,
+  expect unchanged composer availability, approval behavior, counts, and stream
+  notices for the supplied state. Reload and sign in: expect a clean demo session.
+- [ ] Supply an operational failure whose payload carries `AUTH_CONTEXT_EXPIRED`
+  without a matching failed task in the authoritative snapshot:
   expect only the operational event label today. The
   [parser](../src/infrastructure/sse/parser.ts) leaves payloads opaque; this code
   does not convert that payload into a reauthentication prompt. Record this
-  limitation separately from HTTP 401 handling.
+  limitation separately from supported task-snapshot guidance and HTTP 401 handling.
 
 ## Remaining limits and human decisions
 

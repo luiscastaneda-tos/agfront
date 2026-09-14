@@ -1,5 +1,5 @@
 import type { ConversationActivityStreamState } from "../../application/state/conversationActivity";
-import type { ConversationTasksLoadState } from "../../application/state/conversationTasks";
+import type { ConversationTasksSnapshot } from "../../application/state/conversationTasks";
 import type { TaskQueue } from "./taskQueue";
 
 export interface BackgroundWork {
@@ -14,9 +14,10 @@ export interface BackgroundWork {
 /** Summarize existing queue observations without reconciling unwatermarked snapshots. */
 export function createBackgroundWork(
   queue: TaskQueue | null,
-  load: ConversationTasksLoadState | null,
+  tasks: ConversationTasksSnapshot | null,
   stream: ConversationActivityStreamState | null,
 ): BackgroundWork {
+  const load = tasks?.load;
   const rows = queue?.rows ?? [];
   const counts = [
     { status: "queued", label: "Queued" },
@@ -28,6 +29,13 @@ export function createBackgroundWork(
     snapshot: rows.filter((row) => row.snapshotStatus === status).length,
   }));
   const notices: string[] = [];
+  if (tasks?.tasks.some((task) => (
+    task.conversationId === tasks.conversationId
+    && task.status === "failed"
+    && task.failure?.code === "AUTH_CONTEXT_EXPIRED"
+  ))) {
+    notices.push("A task's authentication context has expired. Reload and sign in again. Reloading starts a clean demo session.");
+  }
   if (load?.status === "loading") {
     notices.push("Task data is loading; counts may be incomplete.");
   } else if (load?.status === "failed") {

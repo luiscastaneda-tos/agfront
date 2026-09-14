@@ -64,7 +64,7 @@ export function useChatSession(
   }, [tasks, activity]);
   const backgroundWork = useMemo(() => createBackgroundWork(
     taskQueue,
-    tasks?.load ?? null,
+    tasks,
     activity?.stream ?? null,
   ), [taskQueue, tasks, activity]);
 
