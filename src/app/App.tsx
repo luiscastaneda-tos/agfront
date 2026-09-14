@@ -8,11 +8,11 @@ import { AgentPanel } from "../presentation/components/organisms/AgentPanel";
 import { ApprovalCards } from "../presentation/components/organisms/ApprovalCards";
 import { createActivityTimeline } from "../presentation/view-models/activityTimeline";
 import { useChatSession } from "../presentation/hooks/useChatSession";
-import { createMockChatSession } from "./bootstrap/createMockChatSession";
+import { createLiveChatSession } from "./bootstrap/createLiveChatSession";
 import "./app.css";
 
 function AuthenticatedWorkspace() {
-  const session = useChatSession(createMockChatSession);
+  const session = useChatSession(createLiveChatSession);
   const { activity } = session;
 
   return (
