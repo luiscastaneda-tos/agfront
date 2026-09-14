@@ -143,6 +143,35 @@ const forbiddenRole = ["service", "role"].join("_");
 
 and compare against that. The defence stays; the literal does not appear.
 
+### D-012 — Clean Architecture and Atomic Design in presentation
+
+Recorded per agreement in session handoff before FE-005.
+
+- Clear separation between domain/application, infrastructure and presentation.
+- Atomic Design lives inside the presentation layer only:
+  `presentation/components/{atoms,molecules,organisms,templates}` plus
+  `presentation/pages`, `presentation/hooks`, `presentation/view-models`.
+- Target structure:
+  - `src/app/{providers,router,bootstrap}`
+  - `src/domain/{conversation,tasks,approvals,agents}`
+  - `src/application/{use-cases,ports,state}`
+  - `src/infrastructure/{auth,api,sse,supabase,mappers}`
+  - `src/presentation/…`
+  - `src/contracts/`
+- `presentation` must never call Supabase or the backend directly; the UI consumes
+  hooks/use-cases/view-models. Supabase, fetch, SSE and HTTP details live in `infrastructure`.
+  Business types and conceptual rules live in `domain`. Use cases and state orchestration live
+  in `application`.
+- Atomic Design components stay primarily visual and composable. No business logic inside
+  atoms, molecules or organisms. Avoid giant components mixing fetching, auth, data
+  transformation and rendering.
+- Dependencies point inward: presentation and infrastructure depend on contracts/application,
+  never the reverse.
+- `src/contracts/` remains the protected vendored contract and must NOT be reorganized by
+  this decision.
+- No preventive mass refactor. From the next tasks onward the Architect respects the structure
+  and moves existing code gradually when it touches it.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
