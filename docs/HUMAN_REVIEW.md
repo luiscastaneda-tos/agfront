@@ -1,7 +1,8 @@
 # Demo human review
 
-This guide covers the current source through FE-015C, including event-driven
-task and approval snapshot refresh. It records expected behavior,
+This guide covers the current source through FE-007C and FE-007D, documented in
+FE-015D, including event-driven task and approval snapshot refresh and
+asynchronous chat responses projected from task snapshots. It records expected behavior,
 not completed verification. All manual checks below are unperformed. Backend-dependent
 checks remain unverified until performed with a running backend and controlled
 fictional scenarios. No backend endpoint availability is asserted here.
@@ -113,6 +114,40 @@ The [registry controller](../src/application/state/agentRegistry.ts) is distinct
 the session initializes it once and does not wire registry reloads to events.
 Agent activity observations can still update separately from registry data.
 
+## Asynchronous chat responses
+
+The [submission controller](../src/application/state/chatSubmissions.ts) records
+each send as pending, then accepted with the returned `messageId` and
+`createdTaskIds`, or failed if submission fails. Acceptance acknowledges the
+message request; it does not mean its tasks have completed.
+
+The [session orchestration](../src/application/use-cases/createChatSession.ts)
+uses the lifecycle events listed above to trigger task snapshot refreshes.
+SSE events supply no chat content. The authoritative source is the task
+controller's `getSnapshot()`, consumed by the
+[hook](../src/presentation/hooks/useChatSession.ts). The hook recomputes the
+[response projection](../src/presentation/view-models/chatResponses.ts) when
+submissions or task snapshots change, including when acceptance arrives after a
+task snapshot.
+
+Only tasks in the current conversation whose IDs occur in an accepted
+submission's `createdTaskIds` qualify. A completed task with a result contributes
+`task.result.summary`; a failed task with a failure contributes the sanitized,
+user-facing `task.failure.message`. Other statuses and missing results/failures
+produce no response. The projection does not read `result.data.text`, raw SSE
+payloads, raw tool arguments, or private model reasoning.
+
+Each response has the stable identity `assistant-message:task:<taskId>`.
+The projection deduplicates task IDs across accepted submissions, assigning a
+shared task to the first matching accepted submission in submission order.
+The [workspace](../src/presentation/components/organisms/ChatWorkspace.tsx)
+renders responses beneath their matching submission, keyed by that identity,
+with `Assistant response` or `Task failed` labels. Content is escaped text with
+whitespace preserved, not interpreted HTML. Multiple correlated tasks can
+produce separate responses; refreshed snapshots recompute these responses
+rather than appending duplicate messages. The ready composer remains usable
+while submissions or background tasks are pending.
+
 ## Locally inspectable review
 
 - [ ] Start Vite and open the page: expect the email/password form in
@@ -150,6 +185,39 @@ outside this frontend; no scenario controls are implemented in App.
   was accepted, not that work finished. Blank drafts cannot be sent.
   See [chat submissions](../src/application/state/chatSubmissions.ts) and
   [ChatWorkspace](../src/presentation/components/organisms/ChatWorkspace.tsx).
+- [ ] Asynchronous completion (unperformed): accept a message with a fictional
+  `createdTaskIds` entry while that task is running. Expect the acceptance
+  acknowledgment without an assistant response. Complete the task in the
+  authoritative snapshot and emit `task.completed`: after a successful refresh,
+  expect its exact `result.summary` beneath the matching submission, labeled
+  `Assistant response`. An event alone without updated snapshot content must
+  not supply a response.
+- [ ] Failed task (unperformed): for an accepted submission's correlated task,
+  return a failed snapshot with a sanitized fictional `failure.message` and
+  emit `task.failed`. Expect that text beneath the submission, labeled
+  `Task failed`; the submission itself remains accepted. This differs from a
+  message request failure, which marks the submission failed.
+- [ ] Multiple correlated tasks (unperformed): accept one message with several
+  task IDs and complete or fail them independently in refreshed snapshots.
+  Expect one response per eligible terminal task beneath that submission, in
+  `createdTaskIds` order, with no response yet for running tasks. Repeat an ID
+  within the list and across accepted submissions: expect only one response for
+  it, beneath the first matching accepted submission.
+- [ ] Unrelated task exclusion (unperformed): include a completed task absent
+  from all accepted submissions' `createdTaskIds`, and a task from another
+  conversation, in controlled snapshot responses. Expect neither to appear in
+  chat. Pending or failed submissions must not acquire task-derived responses.
+- [ ] Duplicate refresh/replay (unperformed): refresh the same correlated
+  terminal tasks through new relevant lifecycle sequences, then replay already
+  processed events and reconnect the stream. Expect at most one visible response
+  per correlated task with identity `assistant-message:task:<taskId>`, without
+  appended duplicates. Also arrange a completed snapshot before message
+  acceptance: expect one response when the accepted `createdTaskIds` arrive.
+- [ ] Continued submission (unperformed): while one accepted message's tasks
+  remain queued, running, or awaiting approval, send another nonblank message.
+  Expect immediate independent pending history and a cleared draft. Complete
+  the earlier task during the later submission: expect its response beneath
+  the earlier submission while the composer and activity updates remain usable.
 - [ ] Supply a task snapshot containing parent and child tasks, then explicit
   task events: expect parent IDs in the flat
   [task queue](../src/presentation/components/organisms/TaskQueue.tsx), separate
@@ -249,7 +317,9 @@ refresh depends on accepted relevant events and successful snapshot responses;
 missing events or failed loads can leave retained data stale. Backend-dependent
 checks above remain unperformed, including event-driven refresh scenarios.
 Task relationships are shown as parent IDs, not a nested tree. Chat displays
-submission acknowledgments, not assistant response content. Stream authentication
+submission acknowledgments and correlated terminal task responses from snapshots;
+it does not stream response text from events or display unrelated task results.
+The asynchronous response scenarios above also remain unperformed. Stream authentication
 failure does not disable the ready chat composer; later sends can fail generically.
 There is no in-place sign-in recovery or resynchronization action.
 
