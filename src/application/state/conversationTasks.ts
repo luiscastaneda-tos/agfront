@@ -33,6 +33,7 @@ export function createConversationTasksController(
   let load: ConversationTasksLoadState = { status: 'idle' };
   let started = false;
   let pending = false;
+  let refreshQueued = false;
   let disposed = false;
 
   function notify(): void {
@@ -71,13 +72,24 @@ export function createConversationTasksController(
         failureDescription: 'The task list could not be loaded.',
       };
     } finally {
-      pending = false;
+      if (!disposed) {
+        // Keep pending through publication so reentrant invalidations coalesce too.
+        notify();
+        pending = false;
+        if (refreshQueued && !disposed) {
+          refreshQueued = false;
+          refresh();
+        }
+      }
     }
-    if (!disposed) notify();
   }
 
   function refresh(): void {
-    if (disposed || pending) return;
+    if (disposed) return;
+    if (pending) {
+      refreshQueued = true;
+      return;
+    }
     started = true;
     // Guard before notifying because observers can call start or refresh.
     pending = true;
@@ -109,6 +121,7 @@ export function createConversationTasksController(
     dispose() {
       if (disposed) return;
       disposed = true;
+      refreshQueued = false;
       listeners.clear();
     },
   };

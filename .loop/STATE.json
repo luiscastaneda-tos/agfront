@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 39,
+  "iteration": 40,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -43,14 +43,15 @@
     "FE-011E",
     "FE-011F",
     "FE-015B",
-    "FE-011G"
+    "FE-011G",
+    "FE-009E"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-011G",
+    "task_id": "FE-009E",
     "verdict": "approve",
-    "summary": "FE-011G meets the task and architecture requirements. Approval lifecycle events trigger authoritative refreshes with sequence deduplication, coalesced pending invalidations, and disposal cleanup. Existing decision protections remain intact. Only allowed files changed; harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:51:08Z",
+    "summary": "The complete diff meets FE-009E requirements and architecture rules. Lifecycle events invalidate authoritative task snapshots with sequence deduplication, pending-load coalescing, and disposal safeguards. Changes stay within the two allowed files. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T18:07:51Z",
     "provider": "codex"
   },
   "notes": [
@@ -61,7 +62,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 39,
+    "slot": 40,
     "last_provider": "codex",
     "claude_review_every": 0
   }
