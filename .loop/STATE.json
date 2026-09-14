@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 24,
+  "iteration": 25,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -28,14 +28,15 @@
     "FE-010C",
     "FE-010D",
     "FE-011A",
-    "FE-011B"
+    "FE-011B",
+    "FE-011C"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-011B",
+    "task_id": "FE-011C",
     "verdict": "approve",
-    "summary": "FE-011B meets the task requirements and architecture. The mapper filters and deduplicates in stable order, explicitly copies safe fields and previews, preserves all statuses, and stays within the allowed path. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T16:32:33Z",
+    "summary": "FE-011C meets acceptance criteria and architecture rules. The sole added component renders supplied fields, statuses, and ordered previews, preserves repeated labels, and provides warning and empty-state text without introducing orchestration. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T16:34:22Z",
     "provider": "codex"
   },
   "notes": [
@@ -46,7 +47,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 24,
+    "slot": 25,
     "last_provider": "codex",
     "claude_review_every": 0
   }
