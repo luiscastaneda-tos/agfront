@@ -229,6 +229,48 @@ in `.env.example`, using a placeholder that does not begin with an alphanumeric 
 - If a frozen route does not exist yet in the backend, `HttpTransport` may implement against it, but real network calls must fail explicitly; no silent fallback to mocks inside `HttpTransport`.
 - `MockTransport` remains as a separate implementation for dev/demo, never as a hidden fallback of `HttpTransport`.
 
+### D-014 - Asynchronous assistant messages projected from task snapshots (V1)
+
+Recorded while resolving the FE-007 HUMAN_GATE on 2026-09-14.
+Defines the canonical source, projection flow, and UI idempotency for asynchronous
+assistant responses in the chat interface without mutating frozen contracts 1.0.0.
+
+#### 1. Core Principle & Responsibilities
+- Asynchronous assistant messages in the chat interface are projected strictly from the authoritative snapshot of tasks (`tasksController.getSnapshot()`), NEVER from raw or opaque SSE event payloads.
+- **SSE Responsibility**: SSE functions exclusively as a notification / invalidation / refresh trigger. It is NOT the canonical source of chat message content in V1.
+- **Authoritative Source**: The canonical source is `tasksController.getSnapshot()`.
+
+#### 2. V1 Message & Response Flow
+1. User sends a message -> `POST /conversations/:id/messages`.
+2. Backend returns HTTP `202 Accepted` with `createdTaskIds`.
+3. Chat immediately reflects the message submission with optimistic/acknowledgment status (`pending` / `accepted`).
+4. SSE stream emits operational events (`task.*`, `supervisor.*`, etc.) -> triggers refresh / invalidation of the tasks snapshot.
+5. When a task correlated to the submission reaches `completed` -> Chat projects the assistant response.
+
+#### 3. Content Projection Rules
+- Only project results from tasks linked to that user submission / conversation via `createdTaskIds`.
+- The visible assistant response content must be derived primarily from:
+  ```text
+  task.result.summary
+  ```
+- `task.result.data.text` may ONLY be used if frozen contract 1.0.0 already defines it in a discriminated and safe manner for `kind === "answer"`. If not formally typed as such in contracts 1.0.0, do not invent that interpretation.
+- For failed tasks: project `task.failure.message` as a sanitized user-facing error message.
+- NEVER render raw payloads from SSE events.
+- NEVER render or leak chain-of-thought, reasoning, system prompts, raw tool arguments, or internal payload structures.
+
+#### 4. UI Idempotency & Deduplication
+- Each task-derived response must have a stable identity:
+  ```text
+  assistant-message:task:<taskId>
+  ```
+- Snapshot refreshes, SSE reconnections, or stream replay must never cause duplicated chat messages.
+- A completed task produces at most one visible response associated with that `taskId`.
+- If an interaction creates multiple tasks, multiple updates/results may appear, but each must remain strictly correlated to its `taskId` and deduplicated.
+
+#### 5. Contract Integrity
+- Do NOT modify `src/contracts/`, `contracts.lock`, or contracts 1.0.0.
+- Do NOT implement Option B or attempt to parse unverified SSE payloads not guaranteed by contract.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system
