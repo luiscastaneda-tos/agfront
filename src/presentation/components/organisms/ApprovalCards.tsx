@@ -1,10 +1,12 @@
 import type { ApprovalCardRow } from "../../view-models/approvalCards";
+import type { ApprovalDecision } from "../../../contracts/approval";
 
 interface ApprovalCardsProps {
   rows: readonly ApprovalCardRow[];
+  onDecideApproval: (approvalId: string, decision: ApprovalDecision["decision"]) => void;
 }
 
-export function ApprovalCards({ rows }: ApprovalCardsProps) {
+export function ApprovalCards({ rows, onDecideApproval }: ApprovalCardsProps) {
   return (
     <section aria-labelledby="approval-cards-heading">
       <h2 id="approval-cards-heading">Approvals</h2>
@@ -29,6 +31,22 @@ export function ApprovalCards({ rows }: ApprovalCardsProps) {
                   ))}
                 </ul>
               )}
+              {row.decisionStatus === "submitting" ? <p>Submitting approval decision...</p> : null}
+              {row.decisionStatus === "failed" ? <p>The approval decision could not be submitted.</p> : null}
+              {row.status === "pending" ? (
+                <div>
+                  <button
+                    type="button"
+                    disabled={row.decisionStatus === "submitting"}
+                    onClick={() => onDecideApproval(row.id, "approve")}
+                  >Approve</button>
+                  <button
+                    type="button"
+                    disabled={row.decisionStatus === "submitting"}
+                    onClick={() => onDecideApproval(row.id, "reject")}
+                  >Reject</button>
+                </div>
+              ) : null}
             </li>
           ))}
         </ol>

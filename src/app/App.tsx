@@ -80,7 +80,7 @@ function AuthenticatedWorkspace() {
             <p>The approval list could not be loaded.</p>
           ) : null}
           {session.approvalCards && (session.approvals?.load.status === "ready" || session.approvalCards.length > 0) ? (
-            <ApprovalCards rows={session.approvalCards} />
+            <ApprovalCards rows={session.approvalCards} onDecideApproval={session.onDecideApproval} />
           ) : null}
         </div>
       </>}

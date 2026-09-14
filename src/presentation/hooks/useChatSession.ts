@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ApprovalDecision } from "../../contracts/approval";
 import { AuthenticationRequiredError } from "../../application/ports/streamErrors";
 import type {
   AgentRegistrySnapshot,
@@ -15,6 +16,7 @@ import type {
 } from "../../application/state/conversationTasks";
 import { createEventStore } from "../../application/state/eventStore";
 import type {
+  ConversationApprovalsController,
   ConversationApprovalsSnapshot,
 } from "../../application/state/conversationApprovals";
 import { createApprovalCards } from "../view-models/approvalCards";
@@ -29,6 +31,7 @@ export function useChatSession(
   createSession: () => Promise<ChatSessionControllers>,
 ) {
   const controllerRef = useRef<ChatSubmissionController | null>(null);
+  const approvalsControllerRef = useRef<ConversationApprovalsController | null>(null);
   const [status, setStatus] = useState<SessionStatus>("pending");
   const [submissions, setSubmissions] = useState<ChatSubmission[]>([]);
   const [draft, setDraft] = useState("");
@@ -38,7 +41,7 @@ export function useChatSession(
   const [approvals, setApprovals] = useState<ConversationApprovalsSnapshot | null>(null);
   const approvalCards = useMemo(() => {
     if (!approvals) return null;
-    return createApprovalCards(approvals.conversationId, approvals.approvals);
+    return createApprovalCards(approvals.conversationId, approvals.approvals, approvals.decisions);
   }, [approvals]);
   const agentPanel = useMemo(() => {
     if (!registry || !activity) return null;
@@ -69,6 +72,7 @@ export function useChatSession(
     let unsubscribeApprovals: (() => void) | undefined;
     let ownedSession: ChatSessionControllers | undefined;
     controllerRef.current = null;
+    approvalsControllerRef.current = null;
     setStatus("pending");
     setSubmissions([]);
     setDraft("");
@@ -103,6 +107,7 @@ export function useChatSession(
         const controller = session.chat;
 
         controllerRef.current = controller;
+        approvalsControllerRef.current = session.approvals;
         const refresh = () => {
           if (active) setSubmissions(controller.getSnapshot());
         };
@@ -137,6 +142,7 @@ export function useChatSession(
         releaseSession();
         if (active) {
           controllerRef.current = null;
+          approvalsControllerRef.current = null;
           setActivity(null);
           setTasks(null);
           setRegistry(null);
@@ -150,6 +156,7 @@ export function useChatSession(
     void initialize();
     return () => {
       active = false;
+      approvalsControllerRef.current = null;
       releaseSession();
       controllerRef.current = null;
     };
@@ -162,6 +169,12 @@ export function useChatSession(
     // The controller publishes the pending entry before its first await.
     void controller.submit(draft);
     setDraft("");
+  }
+
+  function decideApproval(approvalId: string, decision: ApprovalDecision["decision"]) {
+    const controller = approvalsControllerRef.current;
+    if (!controller) return;
+    void controller.decideApproval(approvalId, decision);
   }
 
   return {
@@ -179,5 +192,6 @@ export function useChatSession(
     canSubmit: status === "ready" && draft.trim().length > 0,
     onDraftChange: setDraft,
     onSubmit: submit,
+    onDecideApproval: decideApproval,
   };
 }
