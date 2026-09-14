@@ -6,8 +6,9 @@ task snapshots, and task authentication-expiry guidance. It records expected beh
 not completed verification. All manual checks below are unperformed. Backend-dependent
 checks remain unverified until performed with a running backend and controlled
 fictional scenarios. No backend endpoint availability is asserted here.
-`READY_FOR_HUMAN_REVIEW` is the maximum final status permitted by this loop,
-not a result established by this document. This is a fictional-data-only demo.
+Under D-015, `READY_FOR_HUMAN_REVIEW` is the permitted terminal status of this
+loop; this document does not establish that the loop has reached it or that
+manual verification has passed. This is a fictional-data-only demo.
 
 ## Start locally
 
@@ -353,10 +354,13 @@ The asynchronous response scenarios above also remain unperformed. Stream authen
 failure does not disable the ready chat composer; later sends can fail generically.
 There is no in-place sign-in recovery or resynchronization action.
 
-Visual polish awaits **Q-001**; no design system is selected here. Role-aware UI
-awaits **Q-002**, and an accessibility target awaits **Q-003**, as recorded in
+**Q-001 is resolved for V1 through D-015**: retain the current semantic HTML
+and minimal base styling. Branding, a visual design system, and commercial UI/UX
+polish are deferred to post-V1 human review; selecting a visual design system
+is not required for V1 completion. Role-aware UI (**Q-002**) and the accessibility
+target (**Q-003**) remain unresolved, as recorded in
 [architecture decisions](../.loop/ARCHITECTURE_DECISIONS.md). This guide makes no
 production-readiness or accessibility-conformance claim. Current progress is
 recorded in [.loop/STATE.json](../.loop/STATE.json); the earlier HANDOFF checkpoint
 does not establish present behavior. Completing this documentation slice does
-not resolve those decisions or establish that the manual checks passed.
+not resolve Q-002 or Q-003 or establish that the manual checks passed.
