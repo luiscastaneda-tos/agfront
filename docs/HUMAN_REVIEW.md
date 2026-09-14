@@ -1,6 +1,6 @@
 # Demo human review
 
-This guide covers the current source for FE-015A. It records expected behavior,
+This guide covers the current source for FE-015B. It records expected behavior,
 not completed verification. All manual checks below are unperformed. Backend-dependent
 checks remain unverified until performed with a running backend and controlled
 fictional scenarios. No backend endpoint availability is asserted here.
@@ -51,6 +51,16 @@ HttpTransport targets `POST /conversations`,
 These are client targets, not evidence that backend controllers are available.
 Missing routes fail explicitly.
 
+For approval decisions, App passes `useChatSession.onDecideApproval` to
+[ApprovalCards](../src/presentation/components/organisms/ApprovalCards.tsx).
+The hook delegates to the
+[approval controller](../src/application/state/conversationApprovals.ts), which
+generates client idempotency keys with `crypto.randomUUID()` and calls
+`transport.decideApproval`. HttpTransport forwards `decision` and `idempotencyKey`
+to `POST /approvals/:id/decision`. Controller snapshots return through the hook
+and [card projection](../src/presentation/view-models/approvalCards.ts) to the UI,
+keeping submission state separate from the backend-returned approval status.
+
 [Authentication](../src/auth/auth.ts) uses email/password sign-in and a
 module-scoped, memory-only access token. Supabase session persistence, automatic
 refresh, and URL session detection are disabled. The application keeps no durable
@@ -78,11 +88,10 @@ cannot grant permission to decide an approval.
   [timeline projection](../src/presentation/view-models/activityTimeline.ts):
   expect operational labels and envelope metadata, without payload rendering,
   private reasoning, chain-of-thought, or scratchpad output.
-- [ ] Inspect decision handling in ApprovalCards and HttpTransport: expect
-  display-only cards and a transport method forwarding `decision` and
-  `idempotencyKey`. There is no UI decision caller, client decision-key generator,
-  or in-flight decision control to exercise. Record interactive approval review
-  as blocked by missing implementation, not passed.
+- [ ] Trace the approval decision flow above: expect Approve/Reject controls on
+  pending cards, per-card submission state, controller-generated idempotency
+  keys, and transport forwarding. Controls are UX only; the backend enforces
+  authorization. No optimistic approval status change is made.
 
 ## Checks requiring services and controlled fictional scenarios
 
@@ -114,9 +123,31 @@ outside this frontend; no scenario controls are implemented in App.
 - [ ] Supply approval snapshots with fictional preview fields and each of
   pending, approved, rejected, expired, and superseded: expect exact supplied
   preview text and visible status, including ordinary expired/superseded outcomes.
-  Decision submission, retry idempotency, in-flight disabling, and backend
-  authorization rejection cannot be verified through the current cards; leave
-  those checks blocked until a decision flow exists.
+- [ ] Click Approve on one pending card and Reject on another: expect each
+  request to carry the selected decision and a client-generated idempotency key.
+  Inspect only fictional request bodies for decision/key comparisons; do not
+  copy authentication headers or export network captures containing tokens.
+- [ ] Delay a decision response: expect both controls on that card to disable
+  and `Submitting approval decision...` to appear. Other pending cards remain
+  actionable, and repeated submissions for the same in-flight card are ignored.
+  The displayed approval status stays unchanged while waiting.
+- [ ] Fail a decision request: expect `The approval decision could not be
+  submitted.` on the affected card, unchanged approval status and preview, and
+  re-enabled controls if the card is still pending. Raw error details are not
+  displayed. Arrange a backend authorization rejection (including HTTP 401 or
+  403): expect the same generic submission failure, with no optimistic approval
+  status change or global reauthentication transition. Frontend controls do not
+  establish permission.
+- [ ] After a failed attempt, retry the same decision on the same card within
+  the same session: expect reuse of that attempt's idempotency key. Separately,
+  after a failed attempt, choose the opposite decision: expect a fresh key.
+  Retry intent is held in memory and cleared after success; reload starts clean.
+- [ ] Arrange successful decision responses returning approved, rejected,
+  expired, and superseded: expect the affected card to show the returned status
+  and exact returned `inputPreview`, with no decision controls for these terminal
+  statuses. Expired and superseded are ordinary outcomes, not submission errors;
+  the selected decision does not override the returned status. Other cards are
+  not updated by that response.
 - [ ] Make conversation creation fail, then separately fail each snapshot load:
   expect fixed initialization or panel load errors, without mock data replacing
   the failed request. Fail a message request: expect its entry to become failed.
@@ -148,6 +179,8 @@ The [session hook](../src/presentation/hooks/useChatSession.ts) starts task,
 approval, and registry snapshots once. It does not wire their refresh methods
 to events or expose refresh controls. Newly created tasks/approvals may therefore
 be absent, and approval statuses may remain stale while timeline events arrive.
+Successful decision responses do update the affected approval card, but this
+does not provide event-driven snapshot refresh.
 Task relationships are shown as parent IDs, not a nested tree. Chat displays
 submission acknowledgments, not assistant response content. Stream authentication
 failure does not disable the ready chat composer; later sends can fail generically.

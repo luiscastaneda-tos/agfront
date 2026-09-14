@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 37,
+  "iteration": 38,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -41,14 +41,15 @@
     "FE-014D",
     "FE-015A",
     "FE-011E",
-    "FE-011F"
+    "FE-011F",
+    "FE-015B"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-011F",
+    "task_id": "FE-015B",
     "verdict": "approve",
-    "summary": "FE-011F meets the acceptance criteria and architecture requirements. The diff touches only allowed files, delegates decisions to the existing controller, displays per-card submission and failure states, preserves backend statuses and previews, and clears controller references on reset, failure, and cleanup. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:43:17Z",
+    "summary": "FE-015B meets acceptance criteria and architecture requirements. Only docs/HUMAN_REVIEW.md changes, and its approval flow, retry, failure, and outcome guidance matches the implementation. Manual checks remain unperformed, prerequisites and limitations are preserved, and READY_FOR_HUMAN_REVIEW remains the maximum status. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:46:08Z",
     "provider": "codex"
   },
   "notes": [
@@ -59,7 +60,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 37,
+    "slot": 38,
     "last_provider": "codex",
     "claude_review_every": 0
   }
