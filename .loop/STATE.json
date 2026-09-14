@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 32,
+  "iteration": 33,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -36,14 +36,15 @@
     "FE-013B",
     "FE-013C",
     "FE-014A",
-    "FE-014B"
+    "FE-014B",
+    "FE-014C"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-014B",
+    "task_id": "FE-014C",
     "verdict": "approve",
-    "summary": "FE-014B meets the acceptance criteria and architecture constraints. Authentication failures receive distinct state and fixed user guidance while preserving events, sequence metadata, disposal guards, and existing failure handling. Only allowed files changed. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:20:42Z",
+    "summary": "FE-014C meets the acceptance criteria and architecture rules. Lifecycle notifications distinguish connecting, connected, and reconnecting while preserving terminal outcomes, cancellation, retained events, and existing retry behavior. Changes stay within allowed paths. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:23:28Z",
     "provider": "codex"
   },
   "notes": [
@@ -54,7 +55,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 32,
+    "slot": 33,
     "last_provider": "codex",
     "claude_review_every": 0
   }

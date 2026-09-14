@@ -16,7 +16,7 @@ import type {
   ChatResponse,
   Conversation,
 } from '../contracts';
-import type { AgentTransport } from './AgentTransport';
+import type { AgentTransport, StreamLifecycleStatus, StreamOptions } from '../application/ports/AgentTransport';
 
 const MAX_EVENT_DELAY_MS = 1_000;
 const DEFAULT_EVENT_DELAY_MS = 25;
@@ -138,8 +138,18 @@ export class MockTransport implements AgentTransport {
 
   async *streamEvents(
     conversationId: string,
-    opts: { lastEventId?: number; signal: AbortSignal },
+    opts: StreamOptions,
   ): AsyncIterable<AgentEvent> {
+    const report = (status: StreamLifecycleStatus) => {
+      if (opts.signal.aborted) return;
+      try {
+        opts.onLifecycle?.(status);
+      } catch {
+        // Observers cannot interrupt fixture replay.
+      }
+    };
+    report('connecting');
+    report('connected');
     const lastEventId = opts.lastEventId ?? 0;
     const events = recordedEvents.filter(
       (event) =>

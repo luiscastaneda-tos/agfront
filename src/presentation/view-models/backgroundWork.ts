@@ -44,6 +44,10 @@ export function createBackgroundWork(
   }
   if (!stream || stream.status === "idle") {
     notices.push("Activity stream is not yet available; event observations are incomplete.");
+  } else if (stream.status === "connecting") {
+    notices.push("Connecting to activity updates; event observations may be incomplete.");
+  } else if (stream.status === "reconnecting") {
+    notices.push("Reconnecting to activity updates; retained observations may be incomplete or outdated and work may still be continuing.");
   } else if (stream.status === "ended") {
     notices.push("Activity stream ended; observations may be outdated and work may still be continuing.");
   } else if (stream.status === "failed") {

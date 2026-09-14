@@ -1,3 +1,5 @@
+import type { StreamLifecycleStatus, StreamOptions } from '../../application/ports/AgentTransport';
+export type { StreamOptions } from '../../application/ports/AgentTransport';
 import { getAccessToken } from '../../auth/auth';
 import type { AgentEvent } from '../../contracts/events';
 import { AuthenticationRequiredError, ResynchronizationRequiredError, StreamError } from './errors';
@@ -6,11 +8,6 @@ import { decodeEvent, SseParser } from './parser';
 export interface SseClientOptions {
   resolveEndpoint: (conversationId: string) => string | URL;
   fetch?: typeof fetch;
-}
-
-export interface StreamOptions {
-  lastEventId?: number;
-  signal: AbortSignal;
 }
 
 const cancelled = () => new DOMException('Event stream cancelled', 'AbortError');
@@ -57,7 +54,7 @@ export class SseClient {
           controller.abort();
           options.signal.removeEventListener('abort', onAbort);
         };
-        const iterator = this.consume(conversationId, options.lastEventId, controller.signal);
+        const iterator = this.consume(conversationId, options.lastEventId, controller.signal, options.onLifecycle);
         return {
           next: async () => {
             try {
@@ -88,12 +85,22 @@ export class SseClient {
     conversationId: string,
     lastEventId: number | undefined,
     signal: AbortSignal,
+    onLifecycle: StreamOptions['onLifecycle'],
   ): AsyncGenerator<AgentEvent, void, unknown> {
+    const report = (status: StreamLifecycleStatus) => {
+      if (signal.aborted) return;
+      try {
+        onLifecycle?.(status);
+      } catch {
+        // Observers cannot alter connection or retry behavior.
+      }
+    };
     let cursor = lastEventId ?? 0;
     if (!conversationId.trim() || !Number.isSafeInteger(cursor) || cursor < 0) {
       throw new StreamError('invalid-configuration');
     }
     let retryDelay = 250;
+    report('connecting');
     try {
       while (!signal.aborted) {
         let endpoint: string | URL;
@@ -139,6 +146,7 @@ export class SseClient {
             }
             reader = response.body.getReader();
             signal.addEventListener('abort', release, { once: true });
+            report('connected');
             const parser = new SseParser();
             while (!signal.aborted && reader) {
               const chunk = await abortable(reader.read(), signal);
@@ -164,6 +172,7 @@ export class SseClient {
           signal.removeEventListener('abort', release);
           release();
         }
+        report('reconnecting');
         await delay(retryDelay, signal);
         retryDelay = Math.min(retryDelay * 2, 10_000);
       }

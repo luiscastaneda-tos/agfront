@@ -1,10 +1,10 @@
-import type { AgentTransport } from '../../application/ports/AgentTransport';
+import type { AgentTransport, StreamOptions } from '../../application/ports/AgentTransport';
 import { getAccessToken } from '../../auth/auth';
 import type {
   AgentDescriptor, AgentTask, ApprovalDecision, ApprovalRequest,
   ChatRequest, ChatResponse, Conversation,
 } from '../../contracts';
-import { AuthenticationRequiredError, SseClient, type StreamOptions } from '../sse';
+import { AuthenticationRequiredError, SseClient } from '../sse';
 import { HttpTransportError } from './errors';
 
 export interface HttpTransportOptions {

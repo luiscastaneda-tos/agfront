@@ -1,10 +1,10 @@
 import type { AgentEvent } from '../../contracts';
-import type { AgentTransport } from '../ports/AgentTransport';
+import type { AgentTransport, StreamLifecycleStatus } from '../ports/AgentTransport';
 import { AuthenticationRequiredError, ResynchronizationRequiredError } from '../ports/streamErrors';
 import { createEventStore, type MissingSequenceRange } from './eventStore';
 
 export type ConversationActivityStreamState =
-  | { status: 'idle' | 'streaming' | 'ended' }
+  | { status: 'idle' | StreamLifecycleStatus | 'ended' }
   | { status: 'authentication-required' }
   | { status: 'failed'; failureDescription: string }
   | { status: 'resynchronization-required'; expected: number; received: number };
@@ -58,6 +58,14 @@ export function createConversationActivityController(
       if (disposed) return;
       for await (const event of transport.streamEvents(conversationId, {
         signal: abortController.signal,
+        onLifecycle(status) {
+          if (disposed || abortController.signal.aborted) return;
+          if (stream.status !== 'connecting' && stream.status !== 'connected'
+            && stream.status !== 'reconnecting') return;
+          if (stream.status === status) return;
+          stream = { status };
+          notify();
+        },
       })) {
         if (disposed) return;
         if (event.conversationId !== conversationId) continue;
@@ -89,7 +97,7 @@ export function createConversationActivityController(
   return {
     start() {
       if (disposed || stream.status !== 'idle') return;
-      stream = { status: 'streaming' };
+      stream = { status: 'connecting' };
       notify();
       void consume();
     },

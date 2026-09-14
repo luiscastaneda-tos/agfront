@@ -9,6 +9,14 @@ import type {
   Conversation,
 } from '../../contracts';
 
+export type StreamLifecycleStatus = 'connecting' | 'connected' | 'reconnecting';
+
+export interface StreamOptions {
+  lastEventId?: number;
+  signal: AbortSignal;
+  onLifecycle?: (status: StreamLifecycleStatus) => void;
+}
+
 export interface AgentTransport {
   createConversation(): Promise<Conversation>;
   sendMessage(conversationId: string, req: ChatRequest): Promise<ChatResponse>;
@@ -21,6 +29,6 @@ export interface AgentTransport {
   listAgents(): Promise<AgentDescriptor[]>;
   streamEvents(
     conversationId: string,
-    opts: { lastEventId?: number; signal: AbortSignal },
+    opts: StreamOptions,
   ): AsyncIterable<AgentEvent>;
 }

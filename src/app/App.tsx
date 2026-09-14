@@ -23,6 +23,13 @@ function AuthenticatedWorkspace() {
           {session.status === "pending" ? <p>Preparing activity...</p> : null}
           {session.status === "failed" ? <p>Activity could not be initialized.</p> : null}
           {activity ? <>
+            {activity.stream.status === "connecting" ? (
+              <p>Connecting to activity updates. Observations may be incomplete.</p>
+            ) : null}
+            {activity.stream.status === "connected" ? <p>Activity stream connected.</p> : null}
+            {activity.stream.status === "reconnecting" ? (
+              <p>Reconnecting to activity updates. Received activity is retained and may be outdated.</p>
+            ) : null}
             {activity.stream.status === "authentication-required" ? (
               <p>Authentication is required. Reload and sign in again. Reloading starts a clean demo session.</p>
             ) : null}
