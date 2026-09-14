@@ -1,10 +1,12 @@
 import type { AgentEvent } from '../../contracts';
 import type { AgentTransport } from '../ports/AgentTransport';
+import { ResynchronizationRequiredError } from '../ports/streamErrors';
 import { createEventStore, type MissingSequenceRange } from './eventStore';
 
 export type ConversationActivityStreamState =
   | { status: 'idle' | 'streaming' | 'ended' }
-  | { status: 'failed'; failureDescription: string };
+  | { status: 'failed'; failureDescription: string }
+  | { status: 'resynchronization-required'; expected: number; received: number };
 
 export interface ConversationActivitySnapshot {
   conversationId: string;
@@ -65,12 +67,18 @@ export function createConversationActivityController(
       if (disposed) return;
       stream = { status: 'ended' };
       notify();
-    } catch {
+    } catch (error) {
       if (disposed) return;
-      stream = {
-        status: 'failed',
-        failureDescription: 'The activity stream could not be consumed.',
-      };
+      stream = error instanceof ResynchronizationRequiredError
+        ? {
+            status: 'resynchronization-required',
+            expected: error.expected,
+            received: error.received,
+          }
+        : {
+            status: 'failed',
+            failureDescription: 'The activity stream could not be consumed.',
+          };
       notify();
     }
   }
@@ -102,7 +110,8 @@ export function createConversationActivityController(
         events: store.getConversationEvents(conversationId),
         highestSequence: store.getHighestSequence(conversationId),
         missingSequenceRanges,
-        requiresResynchronization: missingSequenceRanges.length > 0,
+        requiresResynchronization:
+          stream.status === 'resynchronization-required' || missingSequenceRanges.length > 0,
         stream: { ...stream },
         disposed,
       };

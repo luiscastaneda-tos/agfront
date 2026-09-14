@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 30,
+  "iteration": 31,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -34,14 +34,15 @@
     "FE-012A",
     "FE-013A",
     "FE-013B",
-    "FE-013C"
+    "FE-013C",
+    "FE-014A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-013C",
+    "task_id": "FE-014A",
     "verdict": "approve",
-    "summary": "FE-013C meets acceptance criteria and architecture requirements. Only the three allowed files change. The stable async factory composes HttpTransport using VITE_BACKEND_URL, preserves existing lifecycle handling, and propagates sanitized initialization failures without mock fallback. Demo implementations remain available. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:16:49Z",
+    "summary": "FE-014A meets the task and architecture requirements. Transport gaps retain terminal resynchronization state without changing stored events or cursors. Error re-exports preserve compatibility, generic failures remain sanitized, and disposal guards remain intact. Changes stay within allowed paths. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:18:43Z",
     "provider": "codex"
   },
   "notes": [
@@ -52,7 +53,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 30,
+    "slot": 31,
     "last_provider": "codex",
     "claude_review_every": 0
   }
