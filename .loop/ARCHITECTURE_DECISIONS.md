@@ -271,14 +271,37 @@ assistant responses in the chat interface without mutating frozen contracts 1.0.
 - Do NOT modify `src/contracts/`, `contracts.lock`, or contracts 1.0.0.
 - Do NOT implement Option B or attempt to parse unverified SSE payloads not guaranteed by contract.
 
+### D-015 - Visual design / branding deferred after V1
+
+Recorded while resolving the FE-015 HUMAN_GATE on 2026-09-14. Formally resolves Q-001 for V1.
+
+#### 1. Scope & Presentation for V1
+- The current functional presentation is retained for V1.
+- Built with clean semantic HTML and minimal base styling.
+- Clean Architecture and Atomic Design principles are already applied in the presentation layer (D-012).
+- Do NOT introduce new visual styling libraries, frameworks (such as Tailwind CSS or CSS Modules), or styling dependencies solely to close the backlog.
+- No definitive corporate branding or commercial design system is established for V1.
+
+#### 2. Deferred Commercial Polish
+- The visual design system, branding, corporate graphic identity, and commercial UI/UX polish are explicitly deferred to a subsequent post-V1 human review phase.
+
+#### 3. Terminal State
+- This decision does NOT imply that the frontend is production-ready.
+- It permits the autonomous engineering loop to conclude at the terminal status:
+  ```text
+  READY_FOR_HUMAN_REVIEW
+  ```
+- The terms `PRODUCTION_READY` or equivalent claims must NEVER be used.
+
 ## OPEN - escalate, never invent
 
-### Q-001 - Visual design system
-No design system is frozen. Choosing one is a human decision; do not invent a
-brand.
+### Q-001 - Visual design system (Resolved for V1 via D-015)
+Resolved for V1: choosing a brand and design system is explicitly deferred to post-V1 human review.
+V1 remains on clean semantic HTML and base functional presentation without external styling libraries.
 
 ### Q-002 - Role-aware UI
 Any UI that varies by role depends on the unresolved role matrix in noktos-auth.
 
 ### Q-003 - Accessibility target
 No WCAG level has been committed to. Do not claim conformance.
+
