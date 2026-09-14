@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 13,
+  "iteration": 14,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -17,14 +17,15 @@
     "FE-007A",
     "FE-007B",
     "FE-008A",
-    "FE-008B"
+    "FE-008B",
+    "FE-008C"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-008B",
+    "task_id": "FE-008C",
     "verdict": "approve",
-    "summary": "FE-008B meets the task requirements and architecture rules. The controller preserves EventStore semantics, exposes defensive snapshots and resynchronization state, and safely handles lifecycle, disposal, and sanitized failures. Only the allowed file was added. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T15:46:05Z",
+    "summary": "FE-008C meets task and architecture requirements. Chat and activity share one mock session; subscriptions, stream cleanup, late initialization, and neutral activity states are handled correctly. Only allowed files changed. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:51:01Z",
     "provider": "codex"
   },
   "notes": [
@@ -35,7 +36,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 13,
+    "slot": 14,
     "last_provider": "codex",
     "claude_review_every": 0
   }
