@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 16,
+  "iteration": 17,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -20,14 +20,15 @@
     "FE-008B",
     "FE-008C",
     "FE-009A",
-    "FE-009B"
+    "FE-009B",
+    "FE-009C"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-009B",
+    "task_id": "FE-009C",
     "verdict": "approve",
-    "summary": "FE-009B meets the task criteria and architecture rules. The diff adds only the presentational TaskQueue component, preserves supplied ordering and distinct statuses, and displays sequence gaps even for empty queues. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T15:54:56Z",
+    "summary": "FE-009C meets the task criteria and architecture constraints. The controller coalesces requests, filters and defensively copies tasks, preserves prior results on failure, sanitizes errors, and handles disposal correctly. Only the allowed file was added. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:57:03Z",
     "provider": "codex"
   },
   "notes": [
@@ -38,7 +39,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 16,
+    "slot": 17,
     "last_provider": "codex",
     "claude_review_every": 0
   }
