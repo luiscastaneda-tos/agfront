@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 12,
+  "iteration": 13,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -16,14 +16,15 @@
     "FE-006C",
     "FE-007A",
     "FE-007B",
-    "FE-008A"
+    "FE-008A",
+    "FE-008B"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-008A",
+    "task_id": "FE-008B",
     "verdict": "approve",
-    "summary": "FE-008A meets acceptance criteria and architecture requirements. Only the two allowed files are added. Filtering, first-occurrence deduplication, ordering, metadata-only projection, grouped rendering and empty state are correct. No payload access or infrastructure wiring is introduced. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T15:43:50Z",
+    "summary": "FE-008B meets the task requirements and architecture rules. The controller preserves EventStore semantics, exposes defensive snapshots and resynchronization state, and safely handles lifecycle, disposal, and sanitized failures. Only the allowed file was added. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:46:05Z",
     "provider": "codex"
   },
   "notes": [
@@ -34,7 +35,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 12,
+    "slot": 13,
     "last_provider": "codex",
     "claude_review_every": 0
   }
