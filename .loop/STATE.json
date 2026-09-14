@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 6,
+  "iteration": 7,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -10,14 +10,15 @@
     "FE-002",
     "FE-003",
     "FE-004",
-    "FE-005"
+    "FE-005",
+    "FE-006A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-005",
+    "task_id": "FE-006A",
     "verdict": "approve",
-    "summary": "FE-005 meets the task criteria and architecture rules. The diff stays within the allowed SSE infrastructure paths, preserves memory-only authentication, implements incremental parsing, resumable sequencing, typed terminal outcomes, bounded retries, and cancellation cleanup. Live transport remains unwired. Harness build and contract-hash verification passed.",
-    "reviewed_at": "2026-09-14T15:28:29Z",
+    "summary": "FE-006A meets the acceptance criteria and architecture rules. The diff contains only the two allowed files, implementing isolated in-memory indexing, deduplication, ordered snapshots, gap tracking, subscriptions, and clearing. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T15:31:02Z",
     "provider": "codex"
   },
   "notes": [
@@ -28,7 +29,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 6,
+    "slot": 7,
     "last_provider": "codex",
     "claude_review_every": 0
   }
