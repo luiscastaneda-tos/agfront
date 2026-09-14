@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 31,
+  "iteration": 32,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -35,14 +35,15 @@
     "FE-013A",
     "FE-013B",
     "FE-013C",
-    "FE-014A"
+    "FE-014A",
+    "FE-014B"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-014A",
+    "task_id": "FE-014B",
     "verdict": "approve",
-    "summary": "FE-014A meets the task and architecture requirements. Transport gaps retain terminal resynchronization state without changing stored events or cursors. Error re-exports preserve compatibility, generic failures remain sanitized, and disposal guards remain intact. Changes stay within allowed paths. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:18:43Z",
+    "summary": "FE-014B meets the acceptance criteria and architecture constraints. Authentication failures receive distinct state and fixed user guidance while preserving events, sequence metadata, disposal guards, and existing failure handling. Only allowed files changed. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:20:42Z",
     "provider": "codex"
   },
   "notes": [
@@ -53,7 +54,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 31,
+    "slot": 32,
     "last_provider": "codex",
     "claude_review_every": 0
   }

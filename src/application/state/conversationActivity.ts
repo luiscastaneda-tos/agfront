@@ -1,10 +1,11 @@
 import type { AgentEvent } from '../../contracts';
 import type { AgentTransport } from '../ports/AgentTransport';
-import { ResynchronizationRequiredError } from '../ports/streamErrors';
+import { AuthenticationRequiredError, ResynchronizationRequiredError } from '../ports/streamErrors';
 import { createEventStore, type MissingSequenceRange } from './eventStore';
 
 export type ConversationActivityStreamState =
   | { status: 'idle' | 'streaming' | 'ended' }
+  | { status: 'authentication-required' }
   | { status: 'failed'; failureDescription: string }
   | { status: 'resynchronization-required'; expected: number; received: number };
 
@@ -69,7 +70,9 @@ export function createConversationActivityController(
       notify();
     } catch (error) {
       if (disposed) return;
-      stream = error instanceof ResynchronizationRequiredError
+      stream = error instanceof AuthenticationRequiredError
+        ? { status: 'authentication-required' }
+        : error instanceof ResynchronizationRequiredError
         ? {
             status: 'resynchronization-required',
             expected: error.expected,

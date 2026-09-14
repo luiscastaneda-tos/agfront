@@ -48,6 +48,8 @@ export function createBackgroundWork(
     notices.push("Activity stream ended; observations may be outdated and work may still be continuing.");
   } else if (stream.status === "failed") {
     notices.push("Activity stream failed; observations may be incomplete or outdated.");
+  } else if (stream.status === "authentication-required") {
+    notices.push("Authentication is required; activity updates have stopped and retained observations may be outdated.");
   }
   return { counts, notices };
 }
