@@ -1,6 +1,7 @@
 # Demo human review
 
-This guide covers the current source for FE-015B. It records expected behavior,
+This guide covers the current source through FE-015C, including event-driven
+task and approval snapshot refresh. It records expected behavior,
 not completed verification. All manual checks below are unperformed. Backend-dependent
 checks remain unverified until performed with a running backend and controlled
 fictional scenarios. No backend endpoint availability is asserted here.
@@ -72,6 +73,46 @@ Authorization header; SSE uses fetch and ReadableStream, with no EventSource or
 WebSockets. Backend authorization enforcement is required: frontend controls
 cannot grant permission to decide an approval.
 
+## Event-driven snapshot refresh
+
+The [session hook](../src/presentation/hooks/useChatSession.ts) starts the initial
+task, approval, and registry loads. In
+[createChatSession](../src/application/use-cases/createChatSession.ts), accepted
+events for the session's conversation invalidate snapshots as follows:
+
+| Lifecycle events | Authoritative reloads |
+| --- | --- |
+| `task.created`, `task.queued`, `task.started`, `task.completed`, `task.failed`, `task.cancelled` | `listTasks(conversationId)` |
+| `approval.requested`, `approval.approved`, `approval.rejected`, `approval.expired`, `approval.superseded` | `listTasks(conversationId)` and `listApprovals(conversationId)` |
+
+Events trigger reloads; their payloads do not supply reconstructed task or
+approval snapshots or previews. Snapshot statuses come from transport responses,
+and cards preserve the supplied `inputPreview`. Task event observations remain
+separate from snapshot statuses. Successful approval decision responses also
+update the affected card; an approval list request that began before that
+decision completed preserves the newer decision response.
+
+The session tracks processed sequences separately for task and approval refresh.
+Each relevant `seq` invalidates each applicable controller only once, so repeated
+activity notifications and duplicate events do not repeatedly reload snapshots.
+Tracking individual sequences also permits an unseen earlier event accepted into
+activity to invalidate; it does not repair or bypass a transport sequence gap.
+
+The [task controller](../src/application/state/conversationTasks.ts) and
+[approval controller](../src/application/state/conversationApprovals.ts) allow
+one list request at a time per controller. Refreshes requested during a pending
+load coalesce into one follow-up load after it settles, including after failure.
+Further events during that follow-up can queue another load. Existing snapshots
+are retained while loading and on failure, alongside the fixed panel load error.
+Failure alone does not schedule a retry.
+
+Disposal unsubscribes the event refresh listeners, clears queued refreshes, and
+prevents further loads or notifications. Results of already pending list requests
+are ignored after disposal; those requests are not cancelled by these controllers.
+The [registry controller](../src/application/state/agentRegistry.ts) is distinct:
+the session initializes it once and does not wire registry reloads to events.
+Agent activity observations can still update separately from registry data.
+
 ## Locally inspectable review
 
 - [ ] Start Vite and open the page: expect the email/password form in
@@ -114,6 +155,32 @@ outside this frontend; no scenario controls are implemented in App.
   [task queue](../src/presentation/components/organisms/TaskQueue.tsx), separate
   snapshot/observed statuses, and source sequences. Background counts cover
   loaded queue rows only; zero observations do not prove completion.
+- [ ] After initial snapshots load, create a new fictional task in the controlled
+  backend scenario and emit `task.created` with a new sequence: expect a task
+  list reload and the new row from its response. Repeat with the other task
+  lifecycle events above: expect refreshed snapshot statuses alongside separate
+  event observations. Task lifecycle events alone do not reload approvals.
+- [ ] Add a new fictional approval to the backend snapshot and emit
+  `approval.requested`: expect both task and approval list reloads, with a new
+  card showing exactly the returned `inputPreview`. Do not supply raw arguments
+  as a substitute for a preview.
+- [ ] Arrange approved, rejected, expired, and superseded approval snapshots in
+  separate controlled scenarios and emit the corresponding approval lifecycle
+  event without a local decision submission: expect both lists to reload and
+  cards to show the returned terminal status without decision controls.
+- [ ] Delay task and approval snapshot requests and send several relevant events
+  with distinct sequences while they are pending: expect no overlapping requests
+  within either controller and one follow-up load per invalidated controller
+  after its pending request settles. Return updated fictional snapshots from
+  the follow-ups and confirm newly appearing rows/cards and terminal updates.
+  Replay already processed sequences: expect no additional event-driven reloads.
+- [ ] Fail a delayed refresh after queueing another relevant event: expect the
+  prior snapshot to remain with its panel load error, then the queued follow-up
+  to run. Separately fail a refresh without queued events: expect retained data
+  and no retry until another relevant event triggers a reload.
+- [ ] Unmount the workspace during delayed snapshot loads using a controlled
+  review setup: expect disposal to discard queued refreshes and ignore late
+  responses, with no further refresh requests from that disposed session.
 - [ ] Supply registry agents and explicit `agent.started`, `agent.completed`,
   and `agent.failed` events: expect busy, idle, and idle observations respectively,
   separate from registry status. An agent without such events has no observed
@@ -175,12 +242,12 @@ outside this frontend; no scenario controls are implemented in App.
 
 ## Remaining limits and human decisions
 
-The [session hook](../src/presentation/hooks/useChatSession.ts) starts task,
-approval, and registry snapshots once. It does not wire their refresh methods
-to events or expose refresh controls. Newly created tasks/approvals may therefore
-be absent, and approval statuses may remain stale while timeline events arrive.
-Successful decision responses do update the affected approval card, but this
-does not provide event-driven snapshot refresh.
+The [session hook](../src/presentation/hooks/useChatSession.ts) exposes no manual
+snapshot refresh controls. Registry data is loaded at initialization only;
+registry changes are not fetched in response to activity. Task and approval
+refresh depends on accepted relevant events and successful snapshot responses;
+missing events or failed loads can leave retained data stale. Backend-dependent
+checks above remain unperformed, including event-driven refresh scenarios.
 Task relationships are shown as parent IDs, not a nested tree. Chat displays
 submission acknowledgments, not assistant response content. Stream authentication
 failure does not disable the ready chat composer; later sends can fail generically.
