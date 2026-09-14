@@ -1,18 +1,6 @@
-import { createAgentRegistryController } from "../../application/state/agentRegistry";
-import { createChatSubmissionController } from "../../application/state/chatSubmissions";
-import { createConversationActivityController } from "../../application/state/conversationActivity";
-import { createConversationApprovalsController } from "../../application/state/conversationApprovals";
-import { createConversationTasksController } from "../../application/state/conversationTasks";
+import { createChatSession } from "../../application/use-cases/createChatSession";
 import { MockTransport } from "../../transport/MockTransport";
 
 export async function createMockChatSession() {
-  const transport = new MockTransport();
-  const conversation = await transport.createConversation();
-  return {
-    chat: createChatSubmissionController(conversation.id, transport),
-    activity: createConversationActivityController(conversation.id, transport),
-    tasks: createConversationTasksController(conversation.id, transport),
-    registry: createAgentRegistryController(transport),
-    approvals: createConversationApprovalsController(conversation.id, transport),
-  };
+  return createChatSession(new MockTransport());
 }

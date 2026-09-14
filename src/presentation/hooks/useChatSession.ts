@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
-  AgentRegistryController,
   AgentRegistrySnapshot,
 } from "../../application/state/agentRegistry";
 import type {
@@ -8,30 +7,20 @@ import type {
   ChatSubmissionController,
 } from "../../application/state/chatSubmissions";
 import type {
-  ConversationActivityController,
   ConversationActivitySnapshot,
 } from "../../application/state/conversationActivity";
 import type {
-  ConversationTasksController,
   ConversationTasksSnapshot,
 } from "../../application/state/conversationTasks";
 import { createEventStore } from "../../application/state/eventStore";
 import type {
-  ConversationApprovalsController,
   ConversationApprovalsSnapshot,
 } from "../../application/state/conversationApprovals";
 import { createApprovalCards } from "../view-models/approvalCards";
 import { createTaskQueue } from "../view-models/taskQueue";
 import { createAgentPanel } from "../view-models/agentPanel";
 import { createBackgroundWork } from "../view-models/backgroundWork";
-
-interface ChatSessionControllers {
-  chat: ChatSubmissionController;
-  activity: ConversationActivityController;
-  tasks: ConversationTasksController;
-  registry: AgentRegistryController;
-  approvals: ConversationApprovalsController;
-}
+import type { ChatSessionControllers } from "../../application/use-cases/createChatSession";
 
 type SessionStatus = "pending" | "ready" | "failed";
 

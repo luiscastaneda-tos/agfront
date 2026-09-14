@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 27,
+  "iteration": 28,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -31,14 +31,15 @@
     "FE-011B",
     "FE-011C",
     "FE-011D",
-    "FE-012A"
+    "FE-012A",
+    "FE-013A"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-012A",
+    "task_id": "FE-013A",
     "verdict": "approve",
-    "summary": "FE-012A meets the task and architecture requirements. The three allowed files add separate snapshot and event-observed counts with uncertainty notices, preserve independent chat submission and draft behavior, and introduce no transport or persistence changes. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T16:39:05Z",
+    "summary": "FE-013A meets acceptance criteria and architecture requirements. The factory creates one conversation before assembling all five controllers, preserves rejection propagation, and uses the supplied transport throughout. Mock bootstrap delegates correctly; hook behavior remains unchanged. Only allowed files changed. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T16:41:12Z",
     "provider": "codex"
   },
   "notes": [
@@ -49,7 +50,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 27,
+    "slot": 28,
     "last_provider": "codex",
     "claude_review_every": 0
   }
