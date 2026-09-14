@@ -2,7 +2,7 @@
   "project": "noktos-agent-frontend",
   "version": 1,
   "status": "RUNNING",
-  "iteration": 35,
+  "iteration": 36,
   "current_task": null,
   "completed_tasks": [
     "FE-000",
@@ -39,14 +39,15 @@
     "FE-014B",
     "FE-014C",
     "FE-014D",
-    "FE-015A"
+    "FE-015A",
+    "FE-011E"
   ],
   "blocked_tasks": [],
   "last_review": {
-    "task_id": "FE-015A",
+    "task_id": "FE-011E",
     "verdict": "approve",
-    "summary": "FE-015A meets acceptance criteria. The diff adds only docs/HUMAN_REVIEW.md, accurately documents current behavior and limitations, leaves manual checks unchecked, and preserves unresolved human decisions without claiming readiness. Harness build and contract verification passed.",
-    "reviewed_at": "2026-09-14T17:33:27Z",
+    "summary": "FE-011E meets the task requirements and architecture constraints. Decision orchestration preserves retry keys, defensive snapshots, backend outcomes, race protection, and terminal disposal. Changes stay within the allowed file. Harness build and contract verification passed.",
+    "reviewed_at": "2026-09-14T17:35:48Z",
     "provider": "codex"
   },
   "notes": [
@@ -57,7 +58,7 @@
     "Development runs against fixtures until FE-013 swaps in the live transport."
   ],
   "reviewer_rotation": {
-    "slot": 35,
+    "slot": 36,
     "last_provider": "codex",
     "claude_review_every": 0
   }
