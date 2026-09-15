@@ -293,6 +293,50 @@ Recorded while resolving the FE-015 HUMAN_GATE on 2026-09-14. Formally resolves 
   ```
 - The terms `PRODUCTION_READY` or equivalent claims must NEVER be used.
 
+### D-016 - V2 frontend is a new Next.js project, not an in-place Vite migration
+
+Recorded by direct human decision (P-001 in workspace-root `PROGRESS.md`) on 2026-09-15,
+outside the autonomous loop — this repo's V1 loop had already reached
+`READY_FOR_HUMAN_REVIEW` and is not being reopened by this decision.
+
+#### 1. Decision
+V2 of the Noktos agent frontend is built as a **new Next.js project, in a new sibling
+repository named `noktos-agent-next`** — alongside, not inside, `noktos-agent-frontend`,
+`noktos-agent-backend`, and `noktos-auth`. Not by converting this Vite/React application in
+place. Repository name and shape confirmed by direct human decision the same day (`Q-P1`,
+resolved, workspace-root `PROGRESS.md`).
+
+`noktos-agent-next` talks directly to `noktos-agent-backend`'s HTTP/SSE API. `noktos-auth`
+is not introduced as a proxy for the Agent API (`Q-P3`, resolved, same document). It gets
+its own governance equivalent to this repo's (`CLAUDE.md`/`AGENTS.md`/`.loop`, Claude Code
+as supervisor/orchestrator only) (`Q-P4`, resolved, same document).
+
+#### 2. This repository's status going forward
+This repository (`noktos-agent-frontend`) is **frozen as the V1 functional baseline**:
+- It remains the regression reference for V1 behavior (chat, tasks, approvals, SSE, auth).
+- It receives bug fixes discovered during human review (e.g. the `HttpTransport`
+  fetch-receiver binding fix recorded the same day) but **no new V2 feature work**.
+- It is not deprecated or deleted. It is not converted, ported in place, or upgraded to
+  Next.js.
+- **The decision to archive, deprecate, or delete this repository is explicitly deferred**
+  to a separate, later human decision — made only after `noktos-agent-next` passes the
+  agreed V2-A smoke tests and is stable. This entry does not make that call.
+
+#### 3. What carries forward vs. what does not
+The new Next.js project selectively reuses/reimplements pieces of this codebase
+(`application/`, `contracts/`, `infrastructure/`, `presentation/view-models/`, atomic
+components) rather than copying directories wholesale. Full V2 slice planning lives in
+workspace-root `PROGRESS.md` under "Parallel work strategy — Track A."
+
+#### 4. Rationale
+Stated by the human: make the framework change now, before this frontend grows further,
+rather than converting a larger codebase later.
+
+#### 5. Does not reopen or reinterpret this repo's existing decisions
+`D-001` through `D-015` in this file remain the authoritative record of what V1 actually is
+and why. This entry does not change, weaken, or reinterpret any of them — it only scopes
+what happens *after* V1 in a *different* codebase.
+
 ## OPEN - escalate, never invent
 
 ### Q-001 - Visual design system (Resolved for V1 via D-015)

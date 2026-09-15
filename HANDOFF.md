@@ -1,12 +1,54 @@
 # HANDOFF — noktos-agent-frontend
 
-**Estado:** ✅ **LOOP TERMINADO** — `READY_FOR_HUMAN_REVIEW` (2026-09-14)
+**Estado:** ✅ **LOOP TERMINADO** — `READY_FOR_HUMAN_REVIEW` (2026-09-14) · **Revisión humana real iniciada** (2026-09-15)
 **Rama:** `loop/agent-frontend`
 **Tareas completadas:** 46 / 46 (`FE-000` a `FE-015`)
-**Worktree:** Limpio, todos los cambios integrados y verificados
+**Worktree:** cambios sin commitear al 2026-09-15 (fix de `HttpTransport` + test de regresión — ver §4)
 
 > [!NOTE]
 > `READY_FOR_HUMAN_REVIEW` es el estado terminal máximo previsto por el loop autónomo. No significa `PRODUCTION_READY`. En V1 la aplicación corre en memoria sin persistencia de sesión cliente; el sistema de diseño visual corporativo y branding comercial quedan explícitamente diferidos a una fase posterior (`D-015`).
+
+> [!IMPORTANT]
+> **Este repositorio queda congelado como baseline funcional de V1 (`D-016`, 2026-09-15).**
+> V2 se construye en un repo hermano nuevo, **`noktos-agent-next`** (`P-001`, `Q-P1`
+> resuelto), no como conversión in-place de este código. Este repo sigue recibiendo fixes de
+> bugs encontrados en revisión humana (como el de §4), pero **no** nuevo trabajo de features
+> de V2. La decisión de archivar/deprecar este repo queda explícitamente diferida a después
+> de que `noktos-agent-next` pase los smoke tests de V2-A — no está decidida aquí. Ver
+> **[`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md)**
+> — copia canónica trackeada por git del plan V2 completo y las decisiones (`P-xxx`) que
+> rigen esto; vive en el repo backend solo por continuidad de git, no porque las decisiones
+> sean exclusivas de ese repo.
+
+---
+
+## 0. Revisión humana real — lo que se validó y lo que no (2026-09-15)
+
+Lo siguiente fue observado directamente por un humano en navegador, contra el backend
+corriendo. **No se marca nada como validado sin esta evidencia.**
+
+**Validado:**
+- Flujo autenticado navegador → backend funcionando.
+- SSE en vivo: el frontend recibe eventos.
+- `demo:greeting`: `POST /messages` aceptado → task creada → `SupervisorAgent` completó →
+  el frontend proyectó la respuesta desde el snapshot de la task.
+- Delegación (`demo:hotel-delegation`): `SupervisorAgent` → child task → `HotelSearchAgent`
+  → ambas tasks `completed`; la relación parent/child es correcta.
+- Mock de hoteles invocado (`[MOCK] Noktos hotel search adapter invoked.` en logs).
+- Aprobación — camino Approve (`demo:add-reservation-to-cart`): aprobación visible →
+  decisión `approved` → task reanudó → `[MOCK] Noktos cart adapter invoked.` observado.
+- Aprobación — camino Reject: decisión `rejected` → la task no reanudó ejecución → no se
+  observó invocación adicional del adaptador de carrito atribuible al rechazo.
+- Un bug real de runtime encontrado, diagnosticado, corregido y probado (§4).
+- Doble `POST /conversations` en `vite` dev (dos conversaciones distintas) vs. una sola en
+  `vite preview` de producción — documentado como comportamiento de dev, no bloqueante (§5).
+
+**Explícitamente NO probado todavía** (no asumir que pasa): expiración/TTL de aprobaciones,
+estado `superseded`, rechazo de decisión por un usuario que no es el dueño de la
+conversación, escenarios exhaustivos de reconexión/gap de SSE, reintentos/idempotencia
+exhaustivos, cualquier caso de seguridad o production-readiness.
+
+Detalle completo, con decisiones de producto asociadas: [`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md).
 
 ---
 
@@ -93,6 +135,53 @@ Para previsualizar el build compilado en `dist/`:
 6. **Stream de eventos**: Verifica que el visor lateral de eventos SSE muestre los eventos operacionales en orden secuencial.
 
 ### Paso 4: Roadmap para V2 (Post-V1)
-1. **Sistema de Diseño y Branding**: Incorporar biblioteca de componentes o Tailwind CSS con la identidad visual corporativa definitiva de Noktos.
-2. **Persistencia de sesión segura**: Evaluar opciones de refresco de tokens o sesión duradera si el producto comercial lo requiere.
-3. **Soporte responsive y accesibilidad**: Refinar la vista móvil y realizar auditoría de accesibilidad WCAG 2.1 AA (`Q-003`).
+
+> [!NOTE]
+> Esta lista es la que dejó el loop autónomo al cerrar V1. **Ya no es el roadmap vigente.**
+> El roadmap V2 real, con decisiones de producto (`P-xxx`) y milestones ejecutables, vive en
+> [`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md). En resumen: V2 usa un frontend Next.js **nuevo** (`D-016`); branding y
+> persistencia de sesión quedan diferidos a V3+, no son parte de V2.
+
+1. **Sistema de Diseño y Branding**: Incorporar biblioteca de componentes o Tailwind CSS con la identidad visual corporativa definitiva de Noktos. — *diferido a V3+, ver [`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md).*
+2. **Persistencia de sesión segura**: Evaluar opciones de refresco de tokens o sesión duradera si el producto comercial lo requiere. — *diferido a V3+ salvo blocker real, ver [`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md).*
+3. **Soporte responsive y accesibilidad**: Refinar la vista móvil y realizar auditoría de accesibilidad WCAG 2.1 AA (`Q-003`). — *sigue abierto, no es requisito de V2.*
+
+---
+
+## 4. Bugs encontrados y corregidos en revisión humana (2026-09-15)
+
+### `HttpTransport` — receptor incorrecto en `fetchImplementation`
+
+**Síntoma:** tras el login, todos los paneles mostraban "could not be initialized"; cero
+requests `POST /conversations` llegaban a la red; sin error en consola.
+
+**Causa raíz** ([`src/infrastructure/api/HttpTransport.ts`](./src/infrastructure/api/HttpTransport.ts)):
+se guardaba `this.fetchImplementation = options.fetch ?? globalThis.fetch` (una referencia
+nativa sin bind) y luego se invocaba como método: `this.fetchImplementation(...)`. `fetch`
+nativo exige `window`/`globalThis` como receptor; invocarlo como método de la instancia lo
+rompe. Confirmado en Chrome DevTools: `TypeError: Failed to execute 'fetch' on 'Window':
+Illegal invocation`.
+
+**Fix:** `this.fetchImplementation = options.fetch ?? globalThis.fetch.bind(globalThis);`
+
+**Test de regresión:** `scripts/test-http-transport-fetch-binding.mjs` (`npm test`). Sin
+dependencias nuevas — usa la API programática de `vite` (ya instalada) para cargar el
+`.ts` real, y un mock de `fetch` que replica el brand-check nativo (el `fetch` de Node no lo
+hace por sí solo, verificado). Se confirmó que el test **falla** contra el código sin el fix
+antes de aceptarlo como válido.
+
+**Validaciones post-fix:** `npm test` PASS, `npm run verify:contracts` OK, `npm run build`
+limpio, cero `console.*` temporales en `src/`.
+
+**No tocado:** auth, comportamiento de Supabase, persistencia de sesión, CORS del backend,
+contratos, arquitectura de SSE.
+
+**Estado:** cambios en el working tree, **sin commitear** al cierre de esta sesión.
+
+## 5. Observación de desarrollo — doble `POST /conversations`
+
+En `vite` modo dev se observaron dos `POST /conversations`, creando dos conversaciones
+distintas. En un build de producción (`vite build` + `vite preview`) se observó una sola.
+Consistente con el doble-invoke deliberado de efectos de React 18 `StrictMode` en desarrollo
+(`src/main.tsx` envuelve `<App/>` en `<StrictMode>`). **No se considera blocker.** No se
+quitó `StrictMode` para ocultarlo. Detalle en [`../noktos-agent-backend/docs/workspace/PROGRESS.md`](../noktos-agent-backend/docs/workspace/PROGRESS.md).
