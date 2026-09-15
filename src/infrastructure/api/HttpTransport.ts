@@ -67,7 +67,11 @@ export class HttpTransport implements AgentTransport {
     } catch {
       throw new HttpTransportError('invalid-configuration');
     }
-    this.fetchImplementation = options.fetch ?? globalThis.fetch;
+    // globalThis.fetch is a native method that requires `window`/`globalThis` as its
+    // receiver. Storing the bare reference and later invoking it as `this.fetchImplementation(...)`
+    // calls it with the HttpTransport instance as receiver, which throws
+    // "Illegal invocation" in browsers. Bind it to preserve the correct receiver.
+    this.fetchImplementation = options.fetch ?? globalThis.fetch.bind(globalThis);
     this.sse = new SseClient({
       resolveEndpoint: id => this.endpoint('conversations', id, 'events'),
       fetch: this.fetchImplementation,

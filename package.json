@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "vite",
     "verify:contracts": "node scripts/verify-contracts.mjs",
+    "test": "node scripts/test-http-transport-fetch-binding.mjs",
     "build": "npm run verify:contracts && tsc && vite build"
   },
   "dependencies": {
